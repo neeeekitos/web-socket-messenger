@@ -2,8 +2,10 @@ package common;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class BatchEntity {
+public class BatchEntity implements Serializable {
 
     private String chatId;
 

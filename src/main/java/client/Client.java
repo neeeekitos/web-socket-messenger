@@ -8,12 +8,13 @@ package client;
 
 import common.Authentication;
 import common.Connection;
+import common.Message;
 import server.Session;
 import server.utils.KeyGenerator;
 
 import java.io.*;
 import java.net.*;
-
+import java.sql.Timestamp;
 
 
 public class Client {
@@ -77,14 +78,13 @@ public class Client {
 
             // wait for a server response with a secure session key
             Object objectAuth = connection.getInputStream().readObject();
-            System.out.println("object received");
             if (objectAuth instanceof Authentication && !connection.isAuthenticated()) {
                 authentication = (Authentication) objectAuth;
 
                 // set a secure session key
                 connection.getSession().setSecureSessionKey(authentication.getSessionKey());
                 connection.setAuthenticated(true);
-                System.out.println("Successfully authenticated user with username : "
+                System.out.println("[Client]: Successfully authenticated user with username : "
                         + authentication.getUsername()
                         + " and session key : "
                         + authentication.getSessionKey());
@@ -100,9 +100,13 @@ public class Client {
         // stage 1 : Message handling
         String line;
         while (true) {
-            line=stdIn.readLine();
+            //wait for user keyboard entries
+            line = stdIn.readLine();
+            //send user message to server
+            Message clientMessage = new Message(connection.getSession(), line, new Timestamp(System.currentTimeMillis()));
+            connection.getOutputStream().writeObject(clientMessage);
 
-            if (line.equals(".")) break;
+            if (line.equals("exit")) break;
         }
         stdIn.close();
         socket.close();

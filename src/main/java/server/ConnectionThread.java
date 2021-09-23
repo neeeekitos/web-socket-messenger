@@ -10,6 +10,7 @@ package server;
 import common.Authentication;
 import common.BatchEntity;
 import common.Connection;
+import common.Message;
 import io.github.cdimascio.dotenv.Dotenv;
 import server.utils.KeyGenerator;
 
@@ -18,6 +19,7 @@ import java.io.ObjectOutputStream;
 public class ConnectionThread implements Runnable {
 
     private Connection connection;
+    Authentication authentication = null;
 
     ConnectionThread(Connection connection) {
         this.connection = connection;
@@ -38,7 +40,7 @@ public class ConnectionThread implements Runnable {
             while (true) {
                 Object objectAuth = connection.getInputStream().readObject();
                 if (objectAuth instanceof Authentication && !connection.isAuthenticated()) {
-                    Authentication authentication = (Authentication) objectAuth;
+                    authentication = (Authentication) objectAuth;
                     connection.getSession().setUsername(authentication.getUsername());
 
                     // generate a secure session key
@@ -47,7 +49,7 @@ public class ConnectionThread implements Runnable {
                     connection.getSession().setSecureSessionKey(secureSessionKey);
                     connection.setAuthenticated(true);
 
-                    System.out.println("Successfully authenticated user with username : "
+                    System.out.println("[ConnectionThread]: Successfully authenticated user with username : "
                             + authentication.getUsername()
                             + " and session key : "
                             + authentication.getSessionKey());
@@ -63,6 +65,19 @@ public class ConnectionThread implements Runnable {
                 Object objectMsg = connection.getInputStream().readObject();
                 if (objectMsg instanceof BatchEntity && connection.isAuthenticated()) {
                     // TODO finish
+                    if (((BatchEntity) objectMsg).getType() == BatchEntity.EntityType.MESSAGE)
+                    {
+                        Message clientMessage = (Message) objectMsg;
+                        System.out.println("[" + authentication.getUsername() + " - " +
+                                clientMessage.getTime() + "]:" + clientMessage.getText());
+                    }
+
+                            //String serverMessage = "[" + userName + "]: " + clientMessage;
+                    //server.broadcast(serverMessage, this);
+                    //here BatchENtity
+                    //test type of BatchEntity
+                    //if message --> sent to particpants except sender
+                    //if action --> print action
                 }
             }
         } catch (Exception e) {
