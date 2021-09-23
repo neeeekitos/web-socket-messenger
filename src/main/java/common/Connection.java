@@ -1,7 +1,8 @@
-package server;
+package common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import server.Session;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

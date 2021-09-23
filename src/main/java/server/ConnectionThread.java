@@ -7,18 +7,22 @@
 
 package server;
 
+import common.Authentication;
 import common.BatchEntity;
+import common.Connection;
+import common.Message;
 import io.github.cdimascio.dotenv.Dotenv;
 import server.utils.KeyGenerator;
 
 import java.io.ObjectOutputStream;
 
-public class ConnectionThread extends Thread {
+public class ConnectionThread implements Runnable {
 
     private Connection connection;
 
     ConnectionThread(Connection connection) {
         this.connection = connection;
+        System.out.println("New thread started");
     }
 
     /**
@@ -26,6 +30,7 @@ public class ConnectionThread extends Thread {
      * @param connection the client socket
      **/
     public void run() {
+
         try {
 
             ObjectOutputStream messageOut = connection.getOutputStream();
@@ -39,8 +44,9 @@ public class ConnectionThread extends Thread {
 
                     // generate a secure session key
                     Dotenv dotenv = Dotenv.load();
-                    String secureSessionKey = KeyGenerator.generateSessionKey(authentication.getUsername(), dotenv.get("SECRET"));
+                    String secureSessionKey = KeyGenerator.generateSecureSessionKey(authentication.getUsername(), dotenv.get("SECRET"));
                     connection.getSession().setSecureSessionKey(secureSessionKey);
+                    connection.setAuthenticated(true);
 
                     System.out.println("Successfully authenticated user with username : "
                             + authentication.getUsername()
@@ -57,7 +63,10 @@ public class ConnectionThread extends Thread {
             while (true) {
                 Object objectMsg = connection.getInputStream().readObject();
                 if (objectMsg instanceof BatchEntity && connection.isAuthenticated()) {
-
+                    // TODO finish
+                    if (objectMsg instanceof Message) {
+                        Message msg = (Message) objectMsg;
+                    }
                 }
             }
         } catch (Exception e) {
