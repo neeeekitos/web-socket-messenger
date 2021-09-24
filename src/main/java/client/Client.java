@@ -6,6 +6,7 @@
  */
 package client;
 
+import common.Action;
 import common.Authentication;
 import common.Connection;
 import common.Message;
@@ -68,13 +69,16 @@ public class Client {
 
         // stage 1 : Authentication
         int authAttempts = 0;
-        String username = args[2];
+        String username;
         String sessionKey = KeyGenerator.generateRandomKey();
         while (authAttempts < AUTHENTICATION_ATTEMPTS) {
+            System.out.println("Enter your username.");
+            username = stdIn.readLine();
 
             // send authentication to the server
             Authentication authentication = new Authentication(username, sessionKey);
             connection.getOutputStream().writeObject(authentication);
+            connection.getOutputStream().flush();
 
             // wait for a server response with a secure session key
             Object objectAuth = connection.getInputStream().readObject();
@@ -84,16 +88,15 @@ public class Client {
                 // set a secure session key
                 connection.getSession().setSecureSessionKey(authentication.getSessionKey());
                 connection.setAuthenticated(true);
-                System.out.println("[Client]: Successfully authenticated user with username : "
-                        + authentication.getUsername()
-                        + " and session key : "
+                System.out.println("[Client]: " + authentication.getUsername()
+                        + " : you're successfully authenticated with secure session key : "
                         + authentication.getSessionKey());
                 break;
             }
             authAttempts++;
         }
         if (!connection.isAuthenticated()) {
-            System.err.println("Authentication failed");
+            System.err.println("Authentication failed.");
             System.exit(1);
         }
 
@@ -102,14 +105,31 @@ public class Client {
         while (true) {
             //wait for user keyboard entries
             line = stdIn.readLine();
-            //send user message to server
-            Message clientMessage = new Message(connection.getSession(), line, new Timestamp(System.currentTimeMillis()));
-            connection.getOutputStream().writeObject(clientMessage);
+            if (line.substring(0, 1).equals("\\"))
+            {
+                System.out.println("Command:  " + line.substring(1));
 
-            if (line.equals("exit")) break;
+                Action clientAction = new Action(connection.getSession(), Action.parseActionStringIntoActionType(line));
+                if (clientAction.getAction() == Action.ActionType.EXIT)
+                {
+                    break;
+                } else {
+                    //send user action to server
+                    connection.getOutputStream().writeObject(clientAction);
+                    connection.getOutputStream().flush();
+                }
+            } else {
+                //send user message to server
+                Message clientMessage = new Message(connection.getSession(), line, new Timestamp(System.currentTimeMillis()));
+                connection.getOutputStream().writeObject(clientMessage);
+                connection.getOutputStream().flush();
+            }
+
+
         }
         stdIn.close();
         socket.close();
+        connection.close();
     }
 }
 

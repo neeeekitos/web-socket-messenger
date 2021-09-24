@@ -7,10 +7,7 @@
 
 package server;
 
-import common.Authentication;
-import common.BatchEntity;
-import common.Connection;
-import common.Message;
+import common.*;
 import io.github.cdimascio.dotenv.Dotenv;
 import server.utils.KeyGenerator;
 
@@ -28,7 +25,6 @@ public class ConnectionThread implements Runnable {
 
     /**
      * receives a request from client then sends an echo to the client
-     * @param connection the client socket
      **/
     public void run() {
 
@@ -38,6 +34,7 @@ public class ConnectionThread implements Runnable {
 
             // Stage 1 : authentication
             while (true) {
+                System.out.println("[ConnectionThread]: 1 TRUE=" + true + " ---- isclosed=" + connection.getSocket().isClosed());
                 Object objectAuth = connection.getInputStream().readObject();
                 if (objectAuth instanceof Authentication && !connection.isAuthenticated()) {
                     authentication = (Authentication) objectAuth;
@@ -63,6 +60,8 @@ public class ConnectionThread implements Runnable {
             // Stage 2 : messages handling
             while (true) {
                 Object objectMsg = connection.getInputStream().readObject();
+                System.out.println("[ConnectionThread]: BLOP");
+
                 if (objectMsg instanceof BatchEntity && connection.isAuthenticated()) {
                     // TODO finish
                     if (((BatchEntity) objectMsg).getType() == BatchEntity.EntityType.MESSAGE)
@@ -70,6 +69,17 @@ public class ConnectionThread implements Runnable {
                         Message clientMessage = (Message) objectMsg;
                         System.out.println("[" + authentication.getUsername() + " - " +
                                 clientMessage.getTime() + "]:" + clientMessage.getText());
+                    }
+                    else if (((BatchEntity) objectMsg).getType() == BatchEntity.EntityType.ACTION)
+                    {
+                        Action clientAction = (Action) objectMsg;
+                        System.out.println("[" + authentication.getUsername() + " - " +
+                                clientAction.getAction().toString() + "]:");
+                        if (clientAction.getAction() == Action.ActionType.EXIT)
+                        {
+                            connection.close();
+                            break;
+                        }
                     }
 
                             //String serverMessage = "[" + userName + "]: " + clientMessage;
@@ -81,7 +91,7 @@ public class ConnectionThread implements Runnable {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error in server:" + e);
+            System.err.println("Error in connexionThread:" + e);
         }
     }
 
