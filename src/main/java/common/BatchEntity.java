@@ -10,7 +10,7 @@ public abstract class BatchEntity implements Serializable {
 
     private Session sender;
 
-    private String chatId;
+    private Integer chatId;
 
     private EntityType type;
 

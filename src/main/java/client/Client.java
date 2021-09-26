@@ -16,6 +16,8 @@ import server.utils.KeyGenerator;
 import java.io.*;
 import java.net.*;
 import java.sql.Timestamp;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class Client {
@@ -105,11 +107,24 @@ public class Client {
         while (true) {
             //wait for user keyboard entries
             line = stdIn.readLine();
-            if (line.substring(0, 1).equals("\\"))
+            if (line.charAt(0) == '\\')
             {
-                System.out.println("Command:  " + line.substring(1));
+                Pattern pattern = Pattern.compile("\\s");
+                Matcher matcher = pattern.matcher(line);
+                boolean found = matcher.find();
+                String payload;
+                String command;
+                if (found) {
+                    payload = line.substring(matcher.end());
+                    command = line.substring(0, matcher.start() - 1);
+                } else {
+                    payload = "";
+                    command = line.substring(0);
+                }
 
-                Action clientAction = new Action(connection.getSession(), Action.parseActionStringIntoActionType(line));
+                System.out.println("[Action] : Command:  " + command + ", Payload : " + payload);
+
+                Action clientAction = new Action(connection.getSession(), Action.ActionType.getActionTypeByIdentifier(command), payload);
                 if (clientAction.getAction() == Action.ActionType.EXIT)
                 {
                     break;

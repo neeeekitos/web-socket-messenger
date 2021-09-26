@@ -7,18 +7,24 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Server {
 
     private Map<String, Connection> activeConnections;
-    private Map<String, Chat> activeChats;
+    private Map<Integer, Chat> activeChats;
 
     public static void main(String[] args) {
-        start(3000);
+        new Server().start(3000);
     }
 
-    public static void start(int port) {
+    public Server() {
+        activeChats = new HashMap<>();
+        activeConnections = new HashMap<>();
+    }
+
+    public void start(int port) {
         System.out.println("starting msg server...");
 
         ServerSocket listenSocket;
@@ -41,7 +47,7 @@ public class Server {
                         false // not authenticated yet
                 );
 
-                new Thread(new ConnectionThread(connection)).start();
+                new Thread(new ConnectionThread(connection, this.activeConnections, this.activeChats)).start();
             }
         } catch (Exception e) {
             System.err.println("Error in Server:" + e);

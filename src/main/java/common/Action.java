@@ -9,41 +9,39 @@ import server.Session;
 public class Action extends BatchEntity {
 
     public enum ActionType {
-        CREATE_GROUP,
-        DELETE_GROUP,
-        ADD_PARTICIPANT_TO_GROUP,
-        REMOVE_PARTICIPANT_FROM_GROUP,
-        CREATE_O2O,
-        EXIT,
-        NONE
+        CREATE_GROUP("\\create_group"),
+        DELETE_GROUP("\\delete_group"),
+        ADD_PARTICIPANT_TO_GROUP("\\add_participant"),
+        REMOVE_PARTICIPANT_FROM_GROUP("\\remove_participant"),
+        CREATE_O2O("\\create_o2o"),
+        EXIT("\\exit"),
+        NONE("");
+
+        private final String identifier;
+
+        ActionType(String identifier) {
+            this.identifier = identifier;
+        }
+
+        @Override
+        public String toString() {
+            return this.identifier;
+        }
+
+        public static ActionType getActionTypeByIdentifier(String identifier) {
+            for(ActionType e : values()) {
+                if(e.identifier.equals(identifier)) return e;
+            }
+            return NONE;
+        }
     }
 
     private ActionType action;
+    private String payload;
 
-    public Action(Session sender, ActionType action) {
+    public Action(Session sender, ActionType action, String payload) {
         this.setSender(sender);
         this.action = action;
-    }
-
-    public static ActionType parseActionStringIntoActionType(String actionString)
-    {
-        switch (actionString)
-        {
-            case "\\create_group":
-                return ActionType.CREATE_GROUP;
-            case "\\delete_group":
-                return ActionType.DELETE_GROUP;
-            case "\\add_participant":
-                return ActionType.ADD_PARTICIPANT_TO_GROUP;
-            case "\\remove_participant":
-                return ActionType.REMOVE_PARTICIPANT_FROM_GROUP;
-            case "\\create_o2o":
-                return ActionType.CREATE_O2O;
-            case "\\exit":
-                return ActionType.EXIT;
-            default:
-                return ActionType.NONE;
-
-        }
+        this.payload = payload;
     }
 }
