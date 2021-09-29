@@ -6,16 +6,14 @@
  */
 package client;
 
-import common.Action;
-import common.Authentication;
-import common.Connection;
-import common.Message;
+import common.*;
 import server.Session;
 import server.utils.KeyGenerator;
 
 import java.io.*;
 import java.net.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,10 +87,10 @@ public class Client {
 
                 // set a secure session key
                 connection.getSession().setSecureSessionKey(authentication.getSessionKey());
+                connection.getSession().setUsername(authentication.getUsername());
                 connection.setAuthenticated(true);
-                System.out.println("[Client]: " + authentication.getUsername()
-                        + " : you're successfully authenticated with secure session key : "
-                        + authentication.getSessionKey());
+                System.out.println("[Client]: " + connection.getSession().getUsername()
+                        + " : you're successfully authenticated");
                 break;
             }
             authAttempts++;
@@ -140,6 +138,17 @@ public class Client {
                 Message clientMessage = new Message(connection.getSession(), 0, line, new Timestamp(System.currentTimeMillis()));
                 connection.getOutputStream().writeObject(clientMessage);
                 connection.getOutputStream().flush();
+
+                Object objectMessage = connection.getInputStream().readObject();
+                if (((BatchEntity) objectMessage).getType() == BatchEntity.EntityType.MESSAGE)
+                {
+                    Message clientMsg = (Message) objectMessage;
+                    System.out.println("New message from chat : "
+                            + clientMsg.getChatId()
+                            + "\r\nText: "
+                            + clientMsg.getText());
+
+                }
             }
 
 
