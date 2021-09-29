@@ -8,8 +8,9 @@
 package server;
 
 import common.*;
-import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.beans.factory.annotation.Autowired;
 import server.utils.KeyGenerator;
+import service.MessageService;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -27,11 +28,14 @@ public class ConnectionThread implements Runnable {
      */
     private final Map<Integer, Chat> activeChats;
 
+    @Autowired
+    private MessageService messageService;
+
     private final Connection connection;
     Authentication authentication = null;
 
 
-    ConnectionThread(Connection connection,  Map<String, Connection> activeConnections, Map<Integer, Chat> activeChats) {
+    ConnectionThread(Connection connection, Map<String, Connection> activeConnections, Map<Integer, Chat> activeChats) {
         this.connection = connection;
         System.out.println("New thread started");
         this.activeChats = activeChats;
@@ -102,6 +106,9 @@ public class ConnectionThread implements Runnable {
                                     e.printStackTrace();
                                 }
                             });
+
+                            // persist message in the database
+                            messageService.saveMessage(clientMessage);
                         } else {
                         }
 
@@ -255,6 +262,7 @@ public class ConnectionThread implements Runnable {
     }
 
     public Map<Integer, Chat> getActiveChats() {
+
         return activeChats;
     }
 
