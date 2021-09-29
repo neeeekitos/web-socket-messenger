@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 
+@Data
 public class Group extends Chat {
 
     private String adminSessionsKey;
@@ -18,10 +19,6 @@ public class Group extends Chat {
 
     public void send() {
 
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
     }
 
     public void addParticipants() {

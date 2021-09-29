@@ -87,12 +87,17 @@ public class ConnectionThread implements Runnable {
                                 clientMessage.getTime() + "]:" + clientMessage.getText());
                         if (activeChats.size() > 0) {
                             ArrayList<String> participants = activeChats.get(clientMessage.getChatId()).getParticipantsUsernames();
+
+                            // check if the sender is in the chat
+                            if (!participants.contains(clientMessage.getSender().getUsername()))
+                                continue;
+
+                            // send the message to each participant
                             participants.forEach(participant -> {
                                 try {
                                     ObjectOutputStream outputStream = activeConnections.get(participant).getOutputStream();
                                     outputStream.writeObject(clientMessage);
                                     outputStream.flush();
-
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -192,11 +197,25 @@ public class ConnectionThread implements Runnable {
 
     private boolean removeParticipantFromGroup(Action clientAction) {
         Chat chat = activeChats.get(clientAction.getChatId());
+        Group group = null;
 
         if (chat == null) {
             System.out.println("[Action completed] Participant "
                     + clientAction.getPayload() + " wasn't removed from the chat because the chat "
                     + clientAction.getChatId() + " doesn't exist");
+            return false;
+        }
+
+        if (!(chat instanceof Group)) {
+            System.out.println("[Action aborted] Chat is not a group");
+            return false;
+        }
+        else
+            group = (Group) chat;
+
+
+        if (group.getAdminSessionsKey() == clientAction.getSender().getSecureSessionKey()) {
+            System.out.println("[Action aborted] Admin can not quit the group");
             return false;
         }
 
