@@ -18,7 +18,13 @@ import java.util.Map;
 
 public class ConnectionThread implements Runnable {
 
+    /**
+     * Map with username and Connection
+     */
     private final Map<String, Connection> activeConnections;
+    /**
+     * Map with chatId and Chat
+     */
     private final Map<Integer, Chat> activeChats;
 
     private final Connection connection;
@@ -136,7 +142,7 @@ public class ConnectionThread implements Runnable {
                 newChatId,
                 participants,
                 clientAction.getSender().getSecureSessionKey(),
-                ""
+                clientAction.getPayload()
         ));
         System.out.println("[Action completed] Group " + clientAction.getPayload());
         return true;
@@ -224,5 +230,13 @@ public class ConnectionThread implements Runnable {
 
     public boolean getConnectedUsers(Action action) {
         return true;
+    }
+
+    public Map<Integer, Chat> getActiveChats() {
+        return activeChats;
+    }
+
+    public Map<String, Connection> getActiveConnections() {
+        return activeConnections;
     }
 }
