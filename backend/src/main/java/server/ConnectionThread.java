@@ -50,8 +50,9 @@ public class ConnectionThread implements Runnable {
                     connection.getSession().setUsername(authentication.getUsername());
 
                     // generate a secure session key
-                    Dotenv dotenv = Dotenv.load();
-                    String secureSessionKey = KeyGenerator.generateSecureSessionKey(authentication.getUsername(), dotenv.get("SECRET"));
+                    //Dotenv dotenv = Dotenv.load();
+                    // TODO replace by dotenv
+                    String secureSessionKey = KeyGenerator.generateSecureSessionKey(authentication.getUsername(), "secret");
                     connection.getSession().setSecureSessionKey(secureSessionKey);
                     connection.setAuthenticated(true);
                     activeConnections.put(authentication.getUsername(), connection);
@@ -78,6 +79,7 @@ public class ConnectionThread implements Runnable {
                         Message clientMessage = (Message) objectMsg;
                         System.out.println("[" + authentication.getUsername() + " - " +
                                 clientMessage.getTime() + "]:" + clientMessage.getText());
+                        // TODO check if chatId exists to avoid NullPointerException
                         ArrayList<String> participants = activeChats.get(clientMessage.getChatId()).getParticipantsUsernames();
                         participants.forEach(participant -> {
                             try {
@@ -128,6 +130,7 @@ public class ConnectionThread implements Runnable {
         Integer newChatId = activeChats.size();
 
         ArrayList<String> participants = new ArrayList<>();
+        // TODO check if participant (its username) exists
         participants.add(clientAction.getSender().getUsername());
         activeChats.put(newChatId, new Group(
                 newChatId,
@@ -135,22 +138,45 @@ public class ConnectionThread implements Runnable {
                 clientAction.getSender().getSecureSessionKey(),
                 ""
         ));
+        System.out.println("[Action completed] Group " + clientAction.getPayload());
         return true;
     }
 
     private boolean deleteGroup(Action clientAction) {
         Chat removed = activeChats.remove(clientAction.getChatId());
-        return (removed != null);
+        boolean result = removed != null;
+
+        // TODO check if participant (its username) exists
+
+        if (result)
+            System.out.println("[Action completed] Group " + clientAction.getPayload());
+        else
+            System.out.println("[Action aborted] Group " + clientAction.getPayload() + " wasn't created ");
+
+        return result;
     }
 
     private boolean addParticipantToGroup(Action clientAction) {
         Chat chat = activeChats.get(clientAction.getChatId());
 
-        if (chat == null) return false;
+        if (chat == null) {
+            System.out.println("[Action completed] Participant "
+                    + clientAction.getPayload() + " wasn't added to the chat because the chat "
+                    + clientAction.getChatId() + " doesn't exist");
+            return false;
+        }
 
-        if (chat.getParticipantsUsernames().contains(clientAction.getPayload())) return false;
+        if (chat.getParticipantsUsernames().contains(clientAction.getPayload())) {
+            System.out.println("[Action completed] Participant "
+                    + clientAction.getPayload() + " wasn't added to the chat "
+                    + clientAction.getChatId() + " because participant has been already added to this chat");
+            return false;
+        }
         else {
             chat.getParticipantsUsernames().add(clientAction.getPayload());
+            System.out.println("[Action completed] Participant "
+                    + clientAction.getPayload() + " was added to the chat "
+                    + clientAction.getChatId());
             return true;
         }
     }
@@ -158,11 +184,23 @@ public class ConnectionThread implements Runnable {
     private boolean removeParticipantFromGroup(Action clientAction) {
         Chat chat = activeChats.get(clientAction.getChatId());
 
-        if (chat == null) return false;
+        if (chat == null) {
+            System.out.println("[Action completed] Participant "
+                    + clientAction.getPayload() + " wasn't removed from the chat because the chat "
+                    + clientAction.getChatId() + " doesn't exist");
+            return false;
+        }
 
-        if (chat.getParticipantsUsernames().contains(clientAction.getPayload())) return false;
+        if (chat.getParticipantsUsernames().contains(clientAction.getPayload())) {
+            chat.getParticipantsUsernames().remove(clientAction.getPayload());
+
+            return true;
+        }
         else {
-            return chat.getParticipantsUsernames().remove(clientAction.getPayload());
+            System.out.println("[Action completed] Participant "
+                    + clientAction.getPayload() + " wasn't removed from the chat "
+                    + clientAction.getChatId() + " because the participant doesn't exist in this chat");
+            return false;
         }
     }
 
@@ -174,9 +212,17 @@ public class ConnectionThread implements Runnable {
         O2o one2one = new O2o(newChatId, participants);
 
         // check if one2one is already present
-        if (activeChats.containsValue(one2one)) return false;
+        if (activeChats.containsValue(one2one)) {
+            System.out.println("[Action aborted] O2o " + clientAction.getPayload() + " already exists");
+            return false;
+        }
 
         activeChats.put(newChatId, one2one);
+        System.out.println("[Action completed] O2o " + clientAction.getPayload() + " has been created");
+        return true;
+    }
+
+    public boolean getConnectedUsers(Action action) {
         return true;
     }
 }

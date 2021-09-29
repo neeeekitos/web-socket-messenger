@@ -13,10 +13,9 @@ public class Message extends BatchEntity {
     private String text;
     private Timestamp time;
 
-    public Message(Session sender, String text, Timestamp time) {
-        this.setSender(sender);
+    public Message(Session sender, Integer chatId, String text, Timestamp time) {
+        super(sender, chatId, EntityType.MESSAGE);
         this.text = text;
         this.time = time;
-        this.setType(EntityType.MESSAGE);
     }
 }

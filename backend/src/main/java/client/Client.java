@@ -116,7 +116,7 @@ public class Client {
                 String command;
                 if (found) {
                     payload = line.substring(matcher.end());
-                    command = line.substring(0, matcher.start() - 1);
+                    command = line.substring(0, matcher.start());
                 } else {
                     payload = "";
                     command = line.substring(0);
@@ -124,7 +124,8 @@ public class Client {
 
                 System.out.println("[Action] : Command:  " + command + ", Payload : " + payload);
 
-                Action clientAction = new Action(connection.getSession(), Action.ActionType.getActionTypeByIdentifier(command), payload);
+                // TODO change chatId
+                Action clientAction = new Action(connection.getSession(), 0, Action.ActionType.getActionTypeByIdentifier(command), payload);
                 if (clientAction.getAction() == Action.ActionType.EXIT)
                 {
                     break;
@@ -135,7 +136,8 @@ public class Client {
                 }
             } else {
                 //send user message to server
-                Message clientMessage = new Message(connection.getSession(), line, new Timestamp(System.currentTimeMillis()));
+                // TODO change chatId
+                Message clientMessage = new Message(connection.getSession(), 0, line, new Timestamp(System.currentTimeMillis()));
                 connection.getOutputStream().writeObject(clientMessage);
                 connection.getOutputStream().flush();
             }

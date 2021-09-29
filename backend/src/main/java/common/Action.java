@@ -39,8 +39,8 @@ public class Action extends BatchEntity {
     private ActionType action;
     private String payload;
 
-    public Action(Session sender, ActionType action, String payload) {
-        this.setSender(sender);
+    public Action(Session sender, Integer chatId, ActionType action, String payload) {
+        super(sender, chatId, EntityType.ACTION);
         this.action = action;
         this.payload = payload;
     }
