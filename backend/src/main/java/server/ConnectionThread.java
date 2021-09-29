@@ -85,18 +85,21 @@ public class ConnectionThread implements Runnable {
                         Message clientMessage = (Message) objectMsg;
                         System.out.println("[" + authentication.getUsername() + " - " +
                                 clientMessage.getTime() + "]:" + clientMessage.getText());
-                        // TODO check if chatId exists to avoid NullPointerException
-                        ArrayList<String> participants = activeChats.get(clientMessage.getChatId()).getParticipantsUsernames();
-                        participants.forEach(participant -> {
-                            try {
-                                ObjectOutputStream outputStream = activeConnections.get(participant).getOutputStream();
-                                outputStream.writeObject(clientMessage);
-                                outputStream.flush();
+                        if (activeChats.size() > 0) {
+                            ArrayList<String> participants = activeChats.get(clientMessage.getChatId()).getParticipantsUsernames();
+                            participants.forEach(participant -> {
+                                try {
+                                    ObjectOutputStream outputStream = activeConnections.get(participant).getOutputStream();
+                                    outputStream.writeObject(clientMessage);
+                                    outputStream.flush();
 
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        });
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            });
+                        } else {
+                        }
+
                     }
                     else if (((BatchEntity) objectMsg).getType() == BatchEntity.EntityType.ACTION)
                     {
