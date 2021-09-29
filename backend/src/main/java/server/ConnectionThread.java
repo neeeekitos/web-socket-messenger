@@ -18,7 +18,13 @@ import java.util.Map;
 
 public class ConnectionThread implements Runnable {
 
+    /**
+     * Map with username and Connection
+     */
     private final Map<String, Connection> activeConnections;
+    /**
+     * Map with chatId and Chat
+     */
     private final Map<Integer, Chat> activeChats;
 
     private final Connection connection;
@@ -133,7 +139,7 @@ public class ConnectionThread implements Runnable {
                 newChatId,
                 participants,
                 clientAction.getSender().getSecureSessionKey(),
-                ""
+                clientAction.getPayload()
         ));
         return true;
     }
@@ -178,5 +184,13 @@ public class ConnectionThread implements Runnable {
 
         activeChats.put(newChatId, one2one);
         return true;
+    }
+
+    public Map<Integer, Chat> getActiveChats() {
+        return activeChats;
+    }
+
+    public Map<String, Connection> getActiveConnections() {
+        return activeConnections;
     }
 }
