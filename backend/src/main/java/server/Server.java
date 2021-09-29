@@ -2,6 +2,8 @@ package server;
 
 import common.Chat;
 import common.Connection;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -10,12 +12,14 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+@SpringBootApplication
 public class Server {
 
     private Map<String, Connection> activeConnections;
     private Map<Integer, Chat> activeChats;
 
     public static void main(String[] args) {
+        SpringApplication.run(Server.class, args);
         new Server().start(3000);
     }
 

@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 import server.Session;
 
 @Data
-@EqualsAndHashCode(callSuper=false)
 public class Action extends BatchEntity {
 
     public enum ActionType {

@@ -7,6 +7,8 @@
 package client;
 
 import common.*;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import server.Session;
 import server.utils.KeyGenerator;
 
@@ -18,19 +20,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class Client {
+@SpringBootApplication
+public class ClientServer {
 
     private static final int AUTHENTICATION_ATTEMPTS = 10;
-
 
     /**
      *  main method
      *  accepts a connection, receives a message from client then sends an echo to the client
      **/
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+        SpringApplication.run(ClientServer.class, args);
 
         Socket socket = null;
         BufferedReader stdIn = null;
+        Integer currentChat = 0;
 
         args = new String[] {"localhost",
                 "3000",
@@ -105,8 +109,7 @@ public class Client {
         while (true) {
             //wait for user keyboard entries
             line = stdIn.readLine();
-            if (line.charAt(0) == '\\')
-            {
+            if (line.charAt(0) == '\\') {
                 Pattern pattern = Pattern.compile("\\s");
                 Matcher matcher = pattern.matcher(line);
                 boolean found = matcher.find();
@@ -123,19 +126,22 @@ public class Client {
                 System.out.println("[Action] : Command:  " + command + ", Payload : " + payload);
 
                 // TODO change chatId
-                Action clientAction = new Action(connection.getSession(), 0, Action.ActionType.getActionTypeByIdentifier(command), payload);
-                if (clientAction.getAction() == Action.ActionType.EXIT)
-                {
+                Action clientAction = new Action(connection.getSession(), currentChat, Action.ActionType.getActionTypeByIdentifier(command), payload);
+                if (clientAction.getAction() == Action.ActionType.EXIT) {
                     break;
                 } else {
                     //send user action to server
                     connection.getOutputStream().writeObject(clientAction);
                     connection.getOutputStream().flush();
                 }
+            } else if (line.charAt(0) == '-') {
+                // set current chat id
+                currentChat = Integer.parseInt(line.substring(1));
+                System.out.println("[Chat changed] : new chat id is " + currentChat);
             } else {
                 //send user message to server
                 // TODO change chatId
-                Message clientMessage = new Message(connection.getSession(), 0, line, new Timestamp(System.currentTimeMillis()));
+                Message clientMessage = new Message(connection.getSession(), currentChat, line, new Timestamp(System.currentTimeMillis()));
                 connection.getOutputStream().writeObject(clientMessage);
                 connection.getOutputStream().flush();
 
