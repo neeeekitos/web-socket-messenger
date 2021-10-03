@@ -7,20 +7,27 @@
 package client;
 
 import common.*;
+import common.domain.Message;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
 import server.Session;
 import server.utils.KeyGenerator;
 
 import java.io.*;
 import java.net.*;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-@SpringBootApplication
+@Service
+//@ComponentScan("server")
+//@EntityScan("server")
 public class ClientServer {
 
     private static final int AUTHENTICATION_ATTEMPTS = 10;
@@ -29,14 +36,23 @@ public class ClientServer {
      *  main method
      *  accepts a connection, receives a message from client then sends an echo to the client
      **/
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
-        SpringApplication.run(ClientServer.class, args);
+    @EventListener(ApplicationReadyEvent.class)
+    public void doSomethingAfterStartup() {
+        try {
+            this.start();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void start() throws IOException, ClassNotFoundException {
+//        SpringApplication.run(ClientServer.class, args);
 
         Socket socket = null;
         BufferedReader stdIn = null;
         Integer currentChat = 0;
 
-        args = new String[] {"localhost",
+        String[] args = new String[] {"localhost",
                 "3000",
                 "test"};
 
@@ -51,8 +67,6 @@ public class ClientServer {
             // creation socket ==> connexion
             socket = new Socket(args[0], Integer.parseInt(args[1]));
             stdIn = new BufferedReader(new InputStreamReader(System.in));
-
-
 
             connection = new Connection(
                     socket,

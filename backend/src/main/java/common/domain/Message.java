@@ -1,25 +1,25 @@
-package common;
+package common.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import common.BatchEntity;
+import lombok.*;
+import org.hibernate.Hibernate;
 import server.Session;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Objects;
 
-@Data
 @Entity
 @NoArgsConstructor
 @Table(name = "message")
+@Getter
+@Setter
+@ToString
 public class Message extends BatchEntity {
 
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String text;
@@ -37,5 +37,18 @@ public class Message extends BatchEntity {
         super(sender, chatId, EntityType.MESSAGE);
         this.text = text;
         this.time = time;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Message message = (Message) o;
+        return Objects.equals(id, message.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return 0;
     }
 }

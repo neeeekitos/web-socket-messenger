@@ -1,27 +1,25 @@
-package controller;
+package client.controller;
 
-import dao.UserRepository;
-import domain.User;
-import org.springframework.http.ResponseEntity;
+import client.service.ClientMessageService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/clients")
 public class ClientsController {
 
-    private final UserRepository clientRepository;
+    private final ClientMessageService clientMessageService;
 
-    public ClientsController(UserRepository clientRepository) {
-        this.clientRepository = clientRepository;
+    @Autowired
+    public ClientsController(ClientMessageService clientMessageService) {
+        this.clientMessageService = clientMessageService;
     }
 
-    @GetMapping
+/*    @GetMapping
     public List<User> getClients() {
-        return clientRepository.findAll();
+        //return clientRepository.findAll();
+        return clientMessageService.get
+        return null;
     }
 
     @GetMapping("/{id}")
@@ -38,7 +36,7 @@ public class ClientsController {
     @PutMapping("/{id}")
     public ResponseEntity updateClient(@PathVariable Long id, @RequestBody User client) {
         User currentClient = clientRepository.findById(id).orElseThrow(RuntimeException::new);
-        /*currentClient.setUsername(client.getUsername());*/
+        *//*currentClient.setUsername(client.getUsername());*//*
         currentClient = clientRepository.save(client);
 
         return ResponseEntity.ok(currentClient);
@@ -48,6 +46,6 @@ public class ClientsController {
     public ResponseEntity deleteClient(@PathVariable Long id) {
         clientRepository.deleteById(id);
         return ResponseEntity.ok().build();
-    }
+    }*/
 }
 

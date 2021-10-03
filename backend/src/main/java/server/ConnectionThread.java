@@ -8,9 +8,12 @@
 package server;
 
 import common.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import common.domain.Chat;
+import common.domain.Group;
+import common.domain.Message;
+import common.domain.O2o;
 import server.utils.KeyGenerator;
-import service.MessageService;
+import server.service.MessageService;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -28,18 +31,18 @@ public class ConnectionThread implements Runnable {
      */
     private final Map<Integer, Chat> activeChats;
 
-    @Autowired
     private MessageService messageService;
 
     private final Connection connection;
     Authentication authentication = null;
 
 
-    ConnectionThread(Connection connection, Map<String, Connection> activeConnections, Map<Integer, Chat> activeChats) {
+    public ConnectionThread(Connection connection, Map<String, Connection> activeConnections, Map<Integer, Chat> activeChats, MessageService messageService) {
         this.connection = connection;
         System.out.println("New thread started");
         this.activeChats = activeChats;
         this.activeConnections = activeConnections;
+        this.messageService = messageService;
     }
 
     /**
@@ -90,7 +93,7 @@ public class ConnectionThread implements Runnable {
                         System.out.println("[" + authentication.getUsername() + " - " +
                                 clientMessage.getTime() + "]:" + clientMessage.getText());
                         if (activeChats.size() > 0) {
-                            ArrayList<String> participants = activeChats.get(clientMessage.getChatId()).getParticipantsUsernames();
+                            ArrayList<String> participants = (ArrayList<String>) activeChats.get(clientMessage.getChatId()).getParticipantsUsernames();
 
                             // check if the sender is in the chat
                             if (!participants.contains(clientMessage.getSender().getUsername()))
@@ -108,7 +111,7 @@ public class ConnectionThread implements Runnable {
                             });
 
                             // persist message in the database
-                            messageService.saveMessage(clientMessage);
+                            System.out.println(messageService.saveMessage(clientMessage).toString());
                         } else {
                         }
 

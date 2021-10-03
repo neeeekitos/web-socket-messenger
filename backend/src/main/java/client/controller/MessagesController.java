@@ -1,48 +1,44 @@
-package controller;
+package client.controller;
 
-import common.Message;
-import dao.MessageRepository;
-import org.springframework.http.ResponseEntity;
+import client.service.ClientMessageService;
+import common.domain.Message;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.LinkedList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/messages")
 public class MessagesController {
 
-    private final MessageRepository messageRepository;
+    private final ClientMessageService clientMessageService;
 
-    public MessagesController(MessageRepository messageRepository) {
-        this.messageRepository = messageRepository;
+    @Autowired
+    public MessagesController(ClientMessageService clientMessageService) {
+        this.clientMessageService = clientMessageService;
     }
 
-    @GetMapping
-    public List<Message> getMessages() {
-        return messageRepository.findAll();
+    @GetMapping("/{chatId}")
+    public List<Message> getMessagesByChatId(@PathVariable Long chatId) {
+        System.out.println("Fetching messages for chat id = " + chatId);
+        return new LinkedList<>();
     }
 
-    @GetMapping("/{id}")
-    public Message getMessage(@PathVariable Long id) {
-        return messageRepository.findById(id).orElseThrow(RuntimeException::new);
-    }
-
-    @PostMapping
+/*    @PostMapping
     public ResponseEntity createMessage(@RequestBody Message message) throws URISyntaxException {
-        Message savedMessage = messageRepository.save(message);
+        Message savedMessage = clientMessageService.save(message);
         return ResponseEntity.created(new URI("/clients/" + savedMessage.getId())).body(savedMessage);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity updateMessage(@PathVariable Long id, @RequestBody Message message) {
-        Message currentMessage = messageRepository.findById(id).orElseThrow(RuntimeException::new);
+        Message currentMessage = clientMessageService.findById(id).orElseThrow(RuntimeException::new);
         currentMessage.setText(message.getText());
         currentMessage.setSender(message.getSender());
         currentMessage.setChatId(message.getChatId());
         currentMessage.setTime(message.getTime());
-        currentMessage = messageRepository.save(message);
+        currentMessage = clientMessageService.save(message);
 
         return ResponseEntity.ok(currentMessage);
     }
@@ -51,5 +47,5 @@ public class MessagesController {
     public ResponseEntity deleteClient(@PathVariable Long id) {
         messageRepository.deleteById(id);
         return ResponseEntity.ok().build();
-    }
+    }*/
 }

@@ -1,7 +1,6 @@
-package dao;
+package server.dao;
 
-import common.Group;
-import common.O2o;
+import common.domain.Group;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GroupRepository extends JpaRepository<Group, Long> {

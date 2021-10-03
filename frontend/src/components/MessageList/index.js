@@ -160,7 +160,7 @@ export default function MessageList(props) {
           <ToolbarButton key="image" icon="ion-ios-image" />,
           <ToolbarButton key="audio" icon="ion-ios-mic" />,
           <ToolbarButton key="money" icon="ion-ios-card" />,
-          <ToolbarButton key="games" icon="ion-logo-game-controller-b" />,
+          <ToolbarButton key="games" icon="ion-logo-game-client.controller-b" />,
           <ToolbarButton key="emoji" icon="ion-ios-happy" />
         ]}/>
       </div>
