@@ -1,10 +1,23 @@
 package server;
 
-import common.Chat;
+import common.domain.Chat;
 import common.Connection;
-import org.springframework.boot.SpringApplication;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+import server.service.MessageService;
 
+import javax.annotation.PostConstruct;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -12,20 +25,21 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-@SpringBootApplication
+@Service
+@ComponentScan("common")
+@EntityScan("common")
 public class Server {
 
-    private Map<String, Connection> activeConnections;
-    private Map<Integer, Chat> activeChats;
+    @Autowired
+    private MessageService messageService;
 
-    public static void main(String[] args) {
-        SpringApplication.run(Server.class, args);
-        new Server().start(3000);
-    }
+    private Map<String, Connection> activeConnections = new HashMap<>();
+    private Map<Integer, Chat> activeChats = new HashMap<>();
 
-    public Server() {
-        activeChats = new HashMap<>();
-        activeConnections = new HashMap<>();
+    // start listening method
+    @EventListener(ApplicationReadyEvent.class)
+    public void doSomethingAfterStartup() {
+        this.start(3000);
     }
 
     public void start(int port) {
@@ -50,8 +64,8 @@ public class Server {
                         new Session(), // creating empty session
                         false // not authenticated yet
                 );
-
-                new Thread(new ConnectionThread(connection, this.activeConnections, this.activeChats)).start();
+                new Thread(new ConnectionThread(connection, this.activeConnections, this.activeChats, messageService)).start();
+                //new Thread((Runnable) context.getBean("connectionThread", connection, this.activeConnections, this.activeChats)).start();
             }
         } catch (Exception e) {
             System.err.println("Error in Server:" + e);

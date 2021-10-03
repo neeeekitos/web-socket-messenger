@@ -1,7 +1,7 @@
-package service;
+package server.service;
 
-import dao.UserRepository;
-import domain.User;
+import server.dao.UserRepository;
+import common.domain.User;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,12 +12,8 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
-
     @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final UserRepository userRepository;
 
     public Optional<User> getUser(final Long id) {
         return userRepository.findById(id);

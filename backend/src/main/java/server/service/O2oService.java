@@ -1,9 +1,7 @@
-package service;
+package server.service;
 
-import common.O2o;
-import dao.O2oRepository;
-import dao.UserRepository;
-import domain.User;
+import common.domain.O2o;
+import server.dao.O2oRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,12 +12,8 @@ import java.util.Optional;
 @Service
 public class O2oService {
 
-    private final O2oRepository o2oRepository;
-
     @Autowired
-    public O2oService(O2oRepository o2oRepository) {
-        this.o2oRepository = o2oRepository;
-    }
+    private final O2oRepository o2oRepository;
 
     public Optional<O2o> getO2o(final Long id) {
         return o2oRepository.findById(id);

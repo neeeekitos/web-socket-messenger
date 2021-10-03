@@ -1,5 +1,7 @@
-package common;
+package common.domain;
 
+import common.BatchEntity;
+import common.ErrorCode;
 import server.Session;
 
 public class Response extends BatchEntity {

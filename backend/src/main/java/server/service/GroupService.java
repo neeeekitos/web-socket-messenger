@@ -1,9 +1,7 @@
-package service;
+package server.service;
 
-import common.Group;
-import dao.GroupRepository;
-import dao.UserRepository;
-import domain.User;
+import common.domain.Group;
+import server.dao.GroupRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,12 +12,8 @@ import java.util.Optional;
 @Service
 public class GroupService {
 
-    private final GroupRepository groupRepository;
-
     @Autowired
-    public GroupService(GroupRepository groupRepository) {
-        this.groupRepository = groupRepository;
-    }
+    private final GroupRepository groupRepository;
 
     public Optional<Group> getGroup(final Long id) {
         return groupRepository.findById(id);
