@@ -1,4 +1,4 @@
 package common;
 
-public class MesageResponse {
+public class MessageResponse {
 }

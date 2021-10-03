@@ -6,14 +6,18 @@
  */
 package client;
 
+import client.service.ClientActionService;
+import client.service.ClientAuthenticationService;
 import common.*;
 import common.domain.Message;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import server.Session;
 import server.utils.KeyGenerator;
@@ -28,9 +32,19 @@ import java.util.regex.Pattern;
 @Service
 //@ComponentScan("server")
 //@EntityScan("server")
+@ComponentScan("common")
 public class ClientServer {
 
-    private static final int AUTHENTICATION_ATTEMPTS = 10;
+    @Autowired
+    private Connection connection;
+
+    @Autowired
+    private ClientAuthenticationService clientAuthenticationService;
+
+    @Autowired
+    private ClientActionService clientActionService;
+
+    public static final int AUTHENTICATION_ATTEMPTS = 10;
 
     /**
      *  main method
@@ -50,7 +64,6 @@ public class ClientServer {
 
         Socket socket = null;
         BufferedReader stdIn = null;
-        Integer currentChat = 0;
 
         String[] args = new String[] {"localhost",
                 "3000",
@@ -61,20 +74,27 @@ public class ClientServer {
             System.exit(1);
         }
 
-        Connection connection = null;
+//        Connection connection = null;
 
         try {
             // creation socket ==> connexion
             socket = new Socket(args[0], Integer.parseInt(args[1]));
             stdIn = new BufferedReader(new InputStreamReader(System.in));
 
-            connection = new Connection(
-                    socket,
-                    new ObjectInputStream(socket.getInputStream()),
-                    new ObjectOutputStream(socket.getOutputStream()),
-                    new Session(), // creating empty session
-                    false // not authenticated yet
-            );
+//            connection = new Connection(
+//                    socket,
+//                    new ObjectInputStream(socket.getInputStream()),
+//                    new ObjectOutputStream(socket.getOutputStream()),
+//                    new Session(), // creating empty session
+//                    false // not authenticated yet
+//            );
+            connection.setSocket(socket);
+            connection.setInputStream(new ObjectInputStream(socket.getInputStream()));
+            connection.setOutputStream(new ObjectOutputStream(socket.getOutputStream()));
+            connection.setSession(new Session());
+            connection.setAuthenticated(false);
+            System.out.println("[Client server] Socket connection established");
+            System.out.println(connection.toString());
 
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host:" + args[0]);
@@ -86,39 +106,21 @@ public class ClientServer {
         }
 
         // stage 1 : Authentication
-        int authAttempts = 0;
         String username;
-        String sessionKey = KeyGenerator.generateRandomKey();
-        while (authAttempts < AUTHENTICATION_ATTEMPTS) {
+        while (!connection.isAuthenticated()) {
+
             System.out.println("Enter your username.");
             username = stdIn.readLine();
 
-            // send authentication to the server
-            Authentication authentication = new Authentication(username, sessionKey);
-            connection.getOutputStream().writeObject(authentication);
-            connection.getOutputStream().flush();
-
-            // wait for a server response with a secure session key
-            Object objectAuth = connection.getInputStream().readObject();
-            if (objectAuth instanceof Authentication && !connection.isAuthenticated()) {
-                authentication = (Authentication) objectAuth;
-
-                // set a secure session key
-                connection.getSession().setSecureSessionKey(authentication.getSessionKey());
-                connection.getSession().setUsername(authentication.getUsername());
-                connection.setAuthenticated(true);
-                System.out.println("[Client]: " + connection.getSession().getUsername()
-                        + " : you're successfully authenticated");
-                break;
-            }
-            authAttempts++;
+            clientAuthenticationService.authenticate(username);
         }
+
         if (!connection.isAuthenticated()) {
             System.err.println("Authentication failed.");
             System.exit(1);
         }
 
-        // stage 1 : Message handling
+        // stage 2 : Message handling
         String line;
         while (true) {
             //wait for user keyboard entries
@@ -140,7 +142,19 @@ public class ClientServer {
                 System.out.println("[Action] : Command:  " + command + ", Payload : " + payload);
 
                 // TODO change chatId
-                Action clientAction = new Action(connection.getSession(), currentChat, Action.ActionType.getActionTypeByIdentifier(command), payload);
+                Action clientAction = new Action(connection.getSession(), Action.ActionType.getActionTypeByIdentifier(command), payload);
+
+                switch (Action.ActionType.getActionTypeByIdentifier(command)) {
+                    case GET_ALL_MESSAGES_BY_CHAT_ID -> this.clientActionService.getAllMessagesByChatId();
+                    case GET_ALL_USERS -> this.clientActionService.getAllUsers();
+                    case GET_ALL_USER_CHATS -> this.clientActionService.getAllUserChats();
+                    case CREATE_GROUP -> this.clientActionService.createGroup(payload);
+                    case DELETE_GROUP -> this.clientActionService.deleteGroup(payload);
+                    case CREATE_O2O -> this.clientActionService.createO2o(payload);
+                    case ADD_PARTICIPANT_TO_GROUP -> this.clientActionService.addParticipantToGroup(payload);
+                    case REMOVE_PARTICIPANT_FROM_GROUP -> this.clientActionService.removeParticipantFromGroup(payload);
+                }
+
                 if (clientAction.getAction() == Action.ActionType.EXIT) {
                     break;
                 } else {
@@ -150,12 +164,13 @@ public class ClientServer {
                 }
             } else if (line.charAt(0) == '-') {
                 // set current chat id
-                currentChat = Integer.parseInt(line.substring(1));
-                System.out.println("[Chat changed] : new chat id is " + currentChat);
+                connection.getSession().setCurrentChatId(Integer.parseInt(line.substring(1)));
+                System.out.println("[Chat changed] : new chat id is " +
+                        connection.getSession().getCurrentChatId());
             } else {
                 //send user message to server
                 // TODO change chatId
-                Message clientMessage = new Message(connection.getSession(), currentChat, line, new Timestamp(System.currentTimeMillis()));
+                Message clientMessage = new Message(connection.getSession(), line, new Timestamp(System.currentTimeMillis()));
                 connection.getOutputStream().writeObject(clientMessage);
                 connection.getOutputStream().flush();
 
@@ -164,7 +179,7 @@ public class ClientServer {
                 {
                     Message clientMsg = (Message) objectMessage;
                     System.out.println("New message from chat : "
-                            + clientMsg.getChatId()
+                            + clientMsg.getSender().getCurrentChatId()
                             + "\r\nText: "
                             + clientMsg.getText());
 

@@ -2,6 +2,7 @@ package common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 import server.Session;
 
@@ -12,6 +13,8 @@ import java.net.Socket;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Component
 public class Connection {
 
     private Socket socket;

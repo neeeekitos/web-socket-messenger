@@ -9,5 +9,6 @@ public class Session implements Serializable {
 
     private String username;
     private String secureSessionKey;
+    private Integer currentChatId;
 
 }

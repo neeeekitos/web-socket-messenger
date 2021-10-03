@@ -9,19 +9,16 @@ import java.util.Objects;
 
 @Entity
 @NoArgsConstructor
-@Table(name = "group")
+@Table(name = "groupChat")
 @Getter
 @Setter
 @ToString
-public class Group extends Chat {
+public class GroupChat extends Chat {
 
-    @Column(name="adminSessionsKey")
     private String adminSessionsKey;
-
-    @Column(name="groupName")
     private String groupName;
 
-    public Group(Integer newChatId, ArrayList<String> participants, String secureSessionKey, String groupName) {
+    public GroupChat(Integer newChatId, ArrayList<String> participants, String secureSessionKey, String groupName) {
         super(newChatId, participants);
         this.adminSessionsKey = secureSessionKey;
         this.groupName = groupName;
@@ -31,8 +28,8 @@ public class Group extends Chat {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Group group = (Group) o;
-        return Objects.equals(getChatId(), group.getChatId());
+        GroupChat groupChat = (GroupChat) o;
+        return Objects.equals(getChatId(), groupChat.getChatId());
     }
 
     @Override

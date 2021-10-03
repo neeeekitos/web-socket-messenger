@@ -1,10 +1,14 @@
 package client.controller;
 
+import client.service.ClientActionService;
 import client.service.ClientMessageService;
+import common.Connection;
 import common.domain.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,17 +16,26 @@ import java.util.List;
 @RequestMapping("/messages")
 public class MessagesController {
 
-    private final ClientMessageService clientMessageService;
+    private ClientMessageService clientMessageService;
+    private ClientActionService clientActionService;
 
     @Autowired
-    public MessagesController(ClientMessageService clientMessageService) {
+    public MessagesController(ClientMessageService clientMessageService, ClientActionService clientActionService) {
         this.clientMessageService = clientMessageService;
+        this.clientActionService = clientActionService;
     }
 
-    @GetMapping("/{chatId}")
-    public List<Message> getMessagesByChatId(@PathVariable Long chatId) {
-        System.out.println("Fetching messages for chat id = " + chatId);
-        return new LinkedList<>();
+    @GetMapping
+    public List<Message> getAllMessagesByChatId() {
+        System.out.println(" [Controller] : Fetching messages from current chat");
+
+        List<Message> messages = new ArrayList<>();
+        try {
+            messages = clientMessageService.getAllMessagesByChatId();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return messages;
     }
 
 /*    @PostMapping

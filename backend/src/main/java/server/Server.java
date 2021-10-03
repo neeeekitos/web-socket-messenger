@@ -15,9 +15,12 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import server.service.GroupService;
 import server.service.MessageService;
+import server.service.O2oService;
 
 import javax.annotation.PostConstruct;
+import javax.swing.*;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -32,6 +35,12 @@ public class Server {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private GroupService groupService;
+
+    @Autowired
+    private O2oService o2oService;
 
     private Map<String, Connection> activeConnections = new HashMap<>();
     private Map<Integer, Chat> activeChats = new HashMap<>();
@@ -64,7 +73,7 @@ public class Server {
                         new Session(), // creating empty session
                         false // not authenticated yet
                 );
-                new Thread(new ConnectionThread(connection, this.activeConnections, this.activeChats, messageService)).start();
+                new Thread(new ConnectionThread(connection, this.activeConnections, this.activeChats, messageService, groupService, o2oService)).start();
                 //new Thread((Runnable) context.getBean("connectionThread", connection, this.activeConnections, this.activeChats)).start();
             }
         } catch (Exception e) {

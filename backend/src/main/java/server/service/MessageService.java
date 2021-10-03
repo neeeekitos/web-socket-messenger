@@ -34,8 +34,8 @@ public class MessageService {
         return savedMessage;
     }
 
-    public List<Message> getAllMessagesByChatId(final Long id) {
-        return messageRepository.findAll();
+    public List<Message> getAllMessagesByChatId(final Integer chatId) {
+        return messageRepository.findAllBySender_CurrentChatIdContaining(chatId);
     }
 
 

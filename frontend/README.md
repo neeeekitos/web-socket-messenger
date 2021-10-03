@@ -35,12 +35,12 @@ This is a simple component that renders `ConversationSearch` and uses `axios` to
 
 ### ConversationListItem
 
-This component provides an overview of a single conversation, including a photo, name (or group title), and a snippet of the most recent message. We use `shave` to trim the displayed message so that all instances of `ConversationListItem` take up the same amount of vertical space.
+This component provides an overview of a single conversation, including a photo, name (or groupChat title), and a snippet of the most recent message. We use `shave` to trim the displayed message so that all instances of `ConversationListItem` take up the same amount of vertical space.
 
 | props | type | description |
 |-------|------|-------------|
 | `photo` | `String` | The URL of a photo to be displayed for the conversation. The demo uses the photo provided by the Random User API. |
-| `name` | `String` | The name of the conversation, whether it is a group or individual. |
+| `name` | `String` | The name of the conversation, whether it is a groupChat or individual. |
 | `text` | `String` | The text of the most recent message; you do not have to truncate this yourself. |
 
 ### ConversationSearch

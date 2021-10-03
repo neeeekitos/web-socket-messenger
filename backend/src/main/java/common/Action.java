@@ -13,6 +13,9 @@ public class Action extends BatchEntity {
         ADD_PARTICIPANT_TO_GROUP("\\add_participant"),
         REMOVE_PARTICIPANT_FROM_GROUP("\\remove_participant"),
         CREATE_O2O("\\create_o2o"),
+        GET_ALL_MESSAGES_BY_CHAT_ID("\\get_all_messages"),
+        GET_ALL_USERS("\\get_all_users"),
+        GET_ALL_USER_CHATS("\\get_all_user_chats"),
         EXIT("\\exit"),
         NONE("");
 
@@ -38,8 +41,8 @@ public class Action extends BatchEntity {
     private ActionType action;
     private String payload;
 
-    public Action(Session sender, Integer chatId, ActionType action, String payload) {
-        super(sender, chatId, EntityType.ACTION);
+    public Action(Session sender, ActionType action, String payload) {
+        super(sender, EntityType.ACTION);
         this.action = action;
         this.payload = payload;
     }

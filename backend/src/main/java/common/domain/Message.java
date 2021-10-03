@@ -17,24 +17,11 @@ import java.util.Objects;
 @ToString
 public class Message extends BatchEntity {
 
-    @Id
-    @Column(name = "id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-
     private String text;
     private Timestamp time;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Message(Session sender, Integer chatId, String text, Timestamp time) {
-        super(sender, chatId, EntityType.MESSAGE);
+    public Message(Session sender, String text, Timestamp time) {
+        super(sender, EntityType.MESSAGE);
         this.text = text;
         this.time = time;
     }
@@ -44,7 +31,7 @@ public class Message extends BatchEntity {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         Message message = (Message) o;
-        return Objects.equals(id, message.id);
+        return Objects.equals(getId(), message.getId());
     }
 
     @Override
