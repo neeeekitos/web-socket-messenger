@@ -1,15 +1,19 @@
 package common;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import server.Session;
 
+@Data
+@NoArgsConstructor
 public class Response extends BatchEntity {
 
-    boolean actionSucceed;
+    boolean success;
     ErrorCode errorCode;
 
-    public Response(Session sender, Integer chatId, EntityType entityType, boolean actionSucceed, ErrorCode errorCode) {
-        super(sender, chatId, entityType);
-        this.actionSucceed = actionSucceed;
+    public Response(Session sender, Integer chatId, boolean success, ErrorCode errorCode) {
+        super(sender, chatId, EntityType.RESPONSE);
+        this.success = success;
         this.errorCode = errorCode;
     }
 }

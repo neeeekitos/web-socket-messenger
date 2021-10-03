@@ -13,7 +13,6 @@ import server.utils.KeyGenerator;
 import java.io.*;
 import java.net.*;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +31,7 @@ public class Client {
         Socket socket = null;
         BufferedReader stdIn = null;
 
+        //TODO : delete username param
         args = new String[] {"localhost",
                 "3000",
                 "test"};
@@ -120,7 +120,6 @@ public class Client {
                     command = line.substring(0);
                 }
 
-                System.out.println("[Action] : Command:  " + command + ", Payload : " + payload);
 
                 // TODO change chatId
                 Action clientAction = new Action(connection.getSession(), 0, Action.ActionType.getActionTypeByIdentifier(command), payload);
@@ -131,6 +130,13 @@ public class Client {
                     //send user action to server
                     connection.getOutputStream().writeObject(clientAction);
                     connection.getOutputStream().flush();
+
+                    Response response = (Response) connection.getInputStream().readObject();
+                    System.out.println("[Action] : Command:  " + command + ", Payload : " + payload + " | Success : " + response.isSuccess());
+                    if (!response.isSuccess()) {
+                        printErrorMessage(response.getErrorCode());
+                    }
+
                 }
             } else {
                 //send user message to server
@@ -140,6 +146,24 @@ public class Client {
                 connection.getOutputStream().flush();
 
                 Object objectMessage = connection.getInputStream().readObject();
+                if (((BatchEntity) objectMessage).getType() == BatchEntity.EntityType.RESPONSE)
+                {
+                    if (objectMessage instanceof MessageResponse)
+                    {
+                        MessageResponse response = (MessageResponse) objectMessage;
+                        System.out.println("> [" + response.getClientMessage().getTime() + "]: " + response.getClientMessage().getText());
+                    }
+
+                    else if (objectMessage instanceof Response)
+                    {
+                        Response response = (Response) objectMessage;
+                        if (!response.isSuccess()) printErrorMessage(response.getErrorCode());
+                        else System.out.println("Success");
+                    }
+                }
+
+
+                //TODO to remove
                 if (((BatchEntity) objectMessage).getType() == BatchEntity.EntityType.MESSAGE)
                 {
                     Message clientMsg = (Message) objectMessage;
@@ -156,6 +180,44 @@ public class Client {
         stdIn.close();
         socket.close();
         connection.close();
+    }
+
+    private static void printErrorMessage(ErrorCode errorCode) {
+        switch (errorCode) {
+            case NONE -> {
+            }
+            case NO_CHAT_CREATED -> {
+                System.err.println("You must create a chat before.");
+                break;
+            }
+            case NO_MATCHING_CHAT -> {
+                System.err.println("No matching chat was found.");
+                break;
+            }
+            case PARTICIPANT_ALREADY_ADDED -> {
+                System.err.println("Participant already added.");
+                break;
+            }
+            case INTERNAL_ERROR -> {
+                System.out.println("An internal error occurred on the server.");
+                break;
+            }
+            case CAN_NOT_REMOVE_ITSELF -> {
+                System.out.println("You can not remove yourself.");
+                break;
+            }
+            case PARTICIPANT_NOT_EXIST_IN_CHAT -> {
+                System.out.println("Participant does not exist in the chat");
+                break;
+            }
+            case ONLY_ADMIN_CAN_REMOVE_PARTICIPANT -> {
+                System.out.println("Only admin can remove participant.");
+                break;
+            }
+            default -> {
+                break;
+            }
+        }
     }
 }
 

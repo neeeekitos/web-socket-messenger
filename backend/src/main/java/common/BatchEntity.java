@@ -2,12 +2,14 @@ package common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import server.Session;
 
 import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public abstract class BatchEntity implements Serializable {
 
     private Session sender;
@@ -18,6 +20,7 @@ public abstract class BatchEntity implements Serializable {
 
     public enum EntityType {
         ACTION,
-        MESSAGE
+        MESSAGE,
+        RESPONSE
     }
 }
