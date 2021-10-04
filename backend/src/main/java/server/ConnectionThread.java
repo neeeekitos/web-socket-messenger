@@ -14,6 +14,7 @@ import common.domain.Message;
 import common.domain.O2o;
 import server.service.GroupService;
 import server.service.O2oService;
+import server.service.UserService;
 import server.utils.KeyGenerator;
 import server.service.MessageService;
 
@@ -38,11 +39,12 @@ public class ConnectionThread implements Runnable {
     private MessageService messageService;
     private GroupService groupService;
     private O2oService o2oService;
+    private UserService userService;
     private final Connection connection;
     private Authentication authentication = null;
 
 
-    public ConnectionThread(Connection connection, Map<String, Connection> activeConnections, Map<Integer, Chat> activeChats, MessageService messageService, GroupService groupService, O2oService o2oService) {
+    public ConnectionThread(Connection connection, Map<String, Connection> activeConnections, Map<Integer, Chat> activeChats, MessageService messageService, GroupService groupService, O2oService o2oService, UserService userService) {
         this.connection = connection;
         System.out.println("New thread started");
         this.activeChats = activeChats;
@@ -50,6 +52,7 @@ public class ConnectionThread implements Runnable {
         this.messageService = messageService;
         this.groupService = groupService;
         this.o2oService = o2oService;
+        this.userService = userService;
     }
 
     /**
@@ -149,8 +152,8 @@ public class ConnectionThread implements Runnable {
     private boolean applyAction(Action action) {
          return switch (action.getAction()) {
             case GET_ALL_MESSAGES_BY_CHAT_ID -> this.getAllMessagesByChatId(action);
-            case GET_ALL_USERS -> this.clientActionService.getAllUsers(action);
-            case GET_ALL_USER_CHATS -> this.clientActionService.getAllUserChats(action);
+            case GET_ALL_USERS -> this.getAllUsers(action);
+            case GET_ALL_USER_CHATS -> this.getAllUserChats(action);
             case CREATE_GROUP -> this.createGroup(action);
             case DELETE_GROUP -> this.deleteGroup(action);
             case ADD_PARTICIPANT_TO_GROUP -> this.addParticipantToGroup(action);
@@ -281,15 +284,20 @@ public class ConnectionThread implements Runnable {
     public boolean getAllMessagesByChatId(Action action) {
         // TODO add pages to list of messages
         List<Message> messages = messageService.getAllMessagesByChatId(action.getSender().getCurrentChatId());
+        return true;
+    }
+
+    public boolean getAllUsers(Action action) {
+        return true;
     }
 
     public boolean getConnectedUsers(Action action) {
         return true;
     }
 
-    public Map<Integer, Chat> getActiveChats() {
+    public boolean getAllUserChats(Action action) {
 
-        return activeChats;
+        return true;
     }
 
     public Map<String, Connection> getActiveConnections() {

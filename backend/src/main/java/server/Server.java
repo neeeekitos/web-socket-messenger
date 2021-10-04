@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import server.service.GroupService;
 import server.service.MessageService;
 import server.service.O2oService;
+import server.service.UserService;
 
 import javax.annotation.PostConstruct;
 import javax.swing.*;
@@ -41,6 +42,9 @@ public class Server {
 
     @Autowired
     private O2oService o2oService;
+
+    @Autowired
+    private UserService userService;
 
     private Map<String, Connection> activeConnections = new HashMap<>();
     private Map<Integer, Chat> activeChats = new HashMap<>();
@@ -73,7 +77,7 @@ public class Server {
                         new Session(), // creating empty session
                         false // not authenticated yet
                 );
-                new Thread(new ConnectionThread(connection, this.activeConnections, this.activeChats, messageService, groupService, o2oService)).start();
+                new Thread(new ConnectionThread(connection, this.activeConnections, this.activeChats, messageService, groupService, o2oService, userService)).start();
                 //new Thread((Runnable) context.getBean("connectionThread", connection, this.activeConnections, this.activeChats)).start();
             }
         } catch (Exception e) {
