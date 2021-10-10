@@ -1,0 +1,81 @@
+.addChatForm {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #eeeef0;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.dropdown {
+    margin: 10px auto !important;
+}
+
+.dropdownMenu {
+    background: rgb(217, 217, 217) !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    z-index: 1000;
+}
+
+.dropdownToggle {
+    border-radius: 10px !important;
+    background: rgb(217, 217, 217) !important;
+    border: none !important;
+    padding: 10px;
+}
+
+.dropdownOption {
+    text-decoration: none;
+    padding: 7px;
+    color: black;
+}
+
+.dropdownToggle:focus {
+    box-shadow: none !important;
+}
+
+.dropdownOption:hover {
+    color: #fff;
+    background: #939393 !important;
+    transform: scale(1.1);
+    border-radius: 10px !important;
+    transition: transform 0.2s ease-out;
+    text-decoration: none;
+}
+
+.btn {
+    font-family: 'Ubuntu', sans-serif;
+    position: relative;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 2;
+    height: 40px;
+    transition: all 200ms linear;
+    border-radius: 10px;
+    width: 100px;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    align-self: center;
+    /* border: none; */
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 15px 0 rgba(0, 0, 0, 0.25);
+    outline: 0;
+    text-transform: capitalize;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow:ellipsis;
+    margin-top: 20px;
+}
+
+.btn:hover {
+    transform: scale(1.1);
+}

@@ -11,16 +11,11 @@ import client.service.ClientAuthenticationService;
 import common.*;
 import common.domain.Message;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import server.Session;
-import server.utils.KeyGenerator;
 
 import java.io.*;
 import java.net.*;
@@ -53,6 +48,7 @@ public class ClientServer {
     @EventListener(ApplicationReadyEvent.class)
     public void doSomethingAfterStartup() {
         try {
+            System.out.println("Launching client server...");
             this.start();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -60,7 +56,6 @@ public class ClientServer {
     }
 
     public void start() throws IOException, ClassNotFoundException {
-//        SpringApplication.run(ClientServer.class, args);
 
         Socket socket = null;
         BufferedReader stdIn = null;
@@ -74,27 +69,19 @@ public class ClientServer {
             System.exit(1);
         }
 
-//        Connection connection = null;
-
         try {
             // creation socket ==> connexion
             socket = new Socket(args[0], Integer.parseInt(args[1]));
             stdIn = new BufferedReader(new InputStreamReader(System.in));
 
-//            connection = new Connection(
-//                    socket,
-//                    new ObjectInputStream(socket.getInputStream()),
-//                    new ObjectOutputStream(socket.getOutputStream()),
-//                    new Session(), // creating empty session
-//                    false // not authenticated yet
-//            );
             connection.setSocket(socket);
-            connection.setInputStream(new ObjectInputStream(socket.getInputStream()));
             connection.setOutputStream(new ObjectOutputStream(socket.getOutputStream()));
+            connection.setInputStream(new ObjectInputStream(socket.getInputStream()));
             connection.setSession(new Session());
             connection.setAuthenticated(false);
             System.out.println("[Client server] Socket connection established");
             System.out.println(connection.toString());
+
 
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host:" + args[0]);
@@ -121,6 +108,10 @@ public class ClientServer {
         }
 
         // stage 2 : Message handling
+        SocketListener listener = new SocketListener();
+        listener.setConnection(connection);
+        listener.start();
+
         String line;
         while (true) {
             //wait for user keyboard entries
@@ -139,11 +130,16 @@ public class ClientServer {
                     command = line.substring(0);
                 }
 
-                System.out.println("[Action] : Command:  " + command + ", Payload : " + payload);
-
                 // TODO change chatId
                 Action clientAction = new Action(connection.getSession(), Action.ActionType.getActionTypeByIdentifier(command), payload);
 
+                if (clientAction.getAction() == Action.ActionType.EXIT)
+                    break;
+
+                System.out.println("[Action] : Command:  " + command + ", Payload : " + payload);
+
+                // pause listener to prevent double reading of an object
+                listener.setPaused(true);
                 switch (Action.ActionType.getActionTypeByIdentifier(command)) {
                     case GET_ALL_MESSAGES_BY_CHAT_ID -> this.clientActionService.getAllMessagesByChatId();
                     case GET_ALL_USERS -> this.clientActionService.getAllUsers();
@@ -154,14 +150,8 @@ public class ClientServer {
                     case ADD_PARTICIPANT_TO_GROUP -> this.clientActionService.addParticipantToGroup(payload);
                     case REMOVE_PARTICIPANT_FROM_GROUP -> this.clientActionService.removeParticipantFromGroup(payload);
                 }
+                listener.setPaused(false);
 
-                if (clientAction.getAction() == Action.ActionType.EXIT) {
-                    break;
-                } else {
-                    //send user action to server
-                    connection.getOutputStream().writeObject(clientAction);
-                    connection.getOutputStream().flush();
-                }
             } else if (line.charAt(0) == '-') {
                 // set current chat id
                 connection.getSession().setCurrentChatId(Integer.parseInt(line.substring(1)));
@@ -170,28 +160,28 @@ public class ClientServer {
             } else {
                 //send user message to server
                 // TODO change chatId
-                Message clientMessage = new Message(connection.getSession(), line, new Timestamp(System.currentTimeMillis()));
+                Message clientMessage = new Message(connection.getSession(), line, new Timestamp(System.currentTimeMillis()), connection.getSession().getCurrentChatId());
                 connection.getOutputStream().writeObject(clientMessage);
                 connection.getOutputStream().flush();
 
-                Object objectMessage = connection.getInputStream().readObject();
-                if (((BatchEntity) objectMessage).getType() == BatchEntity.EntityType.MESSAGE)
-                {
-                    Message clientMsg = (Message) objectMessage;
-                    System.out.println("New message from chat : "
-                            + clientMsg.getSender().getCurrentChatId()
-                            + "\r\nText: "
-                            + clientMsg.getText());
-
-                }
+//                // wait for server response
+//                // pause listener to prevent double reading of a object
+//                listener.setPaused(true);
+//                Object objectMessage = connection.getInputStream().readObject();
+//                // TODO Change to Message type
+//                if (((BatchEntity) objectMessage).getType() == BatchEntity.EntityType.RESPONSE) {
+//                    Message clientMsg = ((MessageResponse) objectMessage).getClientMessage();
+//                    System.out.println("New message from chat : "
+//                            + clientMsg.getSender().getCurrentChatId()
+//                            + "\r\nText: "
+//                            + clientMsg.getText());
+//
+//                }
+//                listener.setPaused(false);
             }
-
-
         }
         stdIn.close();
         socket.close();
         connection.close();
     }
 }
-
-

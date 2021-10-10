@@ -15,6 +15,7 @@ import java.util.Objects;
 @ToString
 public class GroupChat extends Chat {
 
+    @Transient
     private String adminSessionsKey;
     private String groupName;
 

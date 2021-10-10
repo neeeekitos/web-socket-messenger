@@ -2,6 +2,7 @@ package server.service;
 
 import common.domain.Message;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.ComponentScan;
 import server.dao.MessageRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 @Data
 @Service
+@ComponentScan("server")
 public class MessageService {
 
     @Autowired
@@ -35,7 +37,7 @@ public class MessageService {
     }
 
     public List<Message> getAllMessagesByChatId(final Integer chatId) {
-        return messageRepository.findAllBySender_CurrentChatIdContaining(chatId);
+        return messageRepository.findMessagesByChatIdOrderByTimeDesc(chatId);
     }
 
 

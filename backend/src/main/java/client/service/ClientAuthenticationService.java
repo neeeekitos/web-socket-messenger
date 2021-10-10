@@ -1,10 +1,10 @@
 package client.service;
 
-import common.Authentication;
+import common.*;
 import common.Connection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import server.utils.KeyGenerator;
+import server.utils.*;
 
 import java.io.IOException;
 
@@ -37,6 +37,7 @@ public class ClientAuthenticationService {
                 // set a secure session key
                 connection.getSession().setSecureSessionKey(authentication.getSessionKey());
                 connection.getSession().setUsername(authentication.getUsername());
+                connection.getSession().setCurrentChatId(0);
                 connection.setAuthenticated(true);
                 System.out.println("[Client]: " + connection.getSession().getUsername()
                         + " : you're successfully authenticated");

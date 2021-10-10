@@ -1,7 +1,9 @@
 package client.controller;
 
 import client.service.ClientActionService;
+import common.Connection;
 import common.domain.Chat;
+import common.domain.Response;
 import common.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,9 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/actions")
 public class ActionController {
 
@@ -24,7 +29,7 @@ public class ActionController {
         this.clientActionService = clientActionService;
     }
 
-    @PostMapping("/chatgeCurrentChat")
+    @PostMapping("/changeCurrentChat")
     public ResponseEntity<String> changeCurrentChat(@RequestBody Integer newChatId) throws URISyntaxException, IOException {
         boolean isChanged = clientActionService.changeChatId(newChatId);
         if (isChanged) {
@@ -39,76 +44,117 @@ public class ActionController {
     }
 
     @GetMapping("/allUserChats")
-    public List<Chat> getAllUserChats(){
+    public @ResponseBody Map<Integer, Chat> getAllUserChats(){
         System.out.println(" [Controller] : Fetching all user's chats");
 
-        List<Chat> users = new ArrayList<>();
+        Map<Integer, Chat> users = new HashMap<>();
         try {
             users = clientActionService.getAllUserChats();
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return users;
     }
 
     @GetMapping("/allUsers")
-    public List<User> getAllUsers() {
+    public @ResponseBody ArrayList<String> getAllUsers() {
         System.out.println(" [Controller] : Fetching all users");
 
-        List<User> users = new ArrayList<>();
+        ArrayList<String> users = new ArrayList<>();
         try {
             users = clientActionService.getAllUsers();
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        System.out.println(users.toString());
         return users;
     }
 
     @PostMapping("/createGroup")
-    public ResponseEntity createGroup(@RequestBody String groupName) throws URISyntaxException, IOException {
+    public ResponseEntity<String> createGroup(@RequestBody String groupName) throws URISyntaxException {
         System.out.println(" [Controller] : Creating group : " + groupName);
 
-        clientActionService.createGroup(groupName);
+        Response response = new Response();
+        try {
+            response = clientActionService.createGroup(groupName);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 //        return ResponseEntity.created(new URI("/actions/" + createdGroup.getId())).body(createdGroup);
-        return null;
+        return new ResponseEntity<>(
+                response.getErrorCode().toString(),
+                response.isSuccess() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
     @PostMapping("/deleteGroup")
-    public ResponseEntity deleteGroup(@RequestBody String groupName) throws URISyntaxException, IOException {
+    public ResponseEntity<String> deleteGroup(@RequestBody String groupName) throws URISyntaxException {
         System.out.println(" [Controller] : Deleting group : " + groupName);
 
-        clientActionService.deleteGroup(groupName);
+        Response response = new Response();
+        try {
+            response = clientActionService.deleteGroup(groupName);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 //        return ResponseEntity.created(new URI("/actions/" + createdGroup.getId())).body(createdGroup);
-        return null;
+        return new ResponseEntity<>(
+                response.getErrorCode().toString(),
+                response.isSuccess() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
     @PostMapping("/addParticipant")
-    public ResponseEntity addParticipantToGroup(@RequestBody String username) throws URISyntaxException, IOException {
+    public ResponseEntity<String> addParticipantToGroup(@RequestBody String username) throws URISyntaxException {
         System.out.println(" [Controller] : Adding participant : " +
                 username + " : " + " to the current group");
 
-        clientActionService.addParticipantToGroup(username);
+        Response response = new Response();
+        try {
+            response = clientActionService.addParticipantToGroup(username);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 //        return ResponseEntity.created(new URI("/actions/" + createdGroup.getId())).body(createdGroup);
-        return null;
+        return new ResponseEntity<>(
+                response.getErrorCode().toString(),
+                response.isSuccess() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
     @PostMapping("/removeParticipant")
-    public ResponseEntity removeParticipantFromGroup(@RequestBody String username) throws URISyntaxException, IOException {
+    public ResponseEntity<String> removeParticipantFromGroup(@RequestBody String username) throws URISyntaxException {
         System.out.println(" [Controller] : Removing participant : " +
                 username + " : " + " from the current group");
 
-        clientActionService.removeParticipantFromGroup(username);
-//        return ResponseEntity.created(new URI("/actions/" + createdGroup.getId())).body(createdGroup);
-        return null;
+        Response response = new Response();
+        try {
+            response = clientActionService.removeParticipantFromGroup(username);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>(
+                response.getErrorCode().toString(),
+                response.isSuccess() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
     @PostMapping("/createO2o")
-    public ResponseEntity createO2o(@RequestBody String username) throws URISyntaxException, IOException {
+    public ResponseEntity<String> createO2o(@RequestBody String username) throws URISyntaxException {
         System.out.println(" [Controller] : Creating o2o with : " + username);
 
-        clientActionService.createO2o(username);
+        Response response = new Response();
+        try {
+            response = clientActionService.createO2o(username);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 //        return ResponseEntity.created(new URI("/actions/" + createdGroup.getId())).body(createdGroup);
-        return null;
+        return new ResponseEntity<>(
+                response.getErrorCode().toString(),
+                response.isSuccess() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
 

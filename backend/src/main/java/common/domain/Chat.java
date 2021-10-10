@@ -2,8 +2,10 @@ package common.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +14,7 @@ import java.util.List;
 @Table(name = "chat")
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public abstract class Chat {
+public abstract class Chat implements Serializable {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -21,7 +23,8 @@ public abstract class Chat {
 
     private Integer chatId;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
+    @NotNull
     private List<String> participantsUsernames;
 
     public Chat() {
@@ -29,7 +32,7 @@ public abstract class Chat {
         participantsUsernames = new ArrayList<>();
     }
 
-    public Chat(Integer newChatId, ArrayList<String> participants) {
+    public Chat(Integer newChatId, @NotNull ArrayList<String> participants) {
         this.chatId = newChatId;
         this.participantsUsernames = participants;
     }

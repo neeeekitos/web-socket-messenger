@@ -8,22 +8,16 @@
 package server;
 
 import common.*;
-import common.domain.Chat;
-import common.domain.GroupChat;
-import common.domain.Message;
-import common.domain.O2o;
+import common.domain.*;
 import server.service.GroupService;
 import server.service.O2oService;
 import server.service.UserService;
-import server.utils.KeyGenerator;
+import server.utils.*;
 import server.service.MessageService;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class ConnectionThread implements Runnable {
 
@@ -103,7 +97,7 @@ public class ConnectionThread implements Runnable {
                         System.out.println("[" + authentication.getUsername() + " - " +
                                 clientMessage.getTime() + "]:" + clientMessage.getText());
                         if (activeChats.size() > 0) {
-                            ArrayList<String> participants = (ArrayList<String>) activeChats.get(clientMessage.getSender().getCurrentChatId()).getParticipantsUsernames();
+                            List<String> participants = activeChats.get(clientMessage.getSender().getCurrentChatId()).getParticipantsUsernames();
 
                             // check if the sender is in the chat
                             if (!participants.contains(clientMessage.getSender().getUsername()))
@@ -113,7 +107,9 @@ public class ConnectionThread implements Runnable {
                             participants.forEach(participant -> {
                                 try {
                                     ObjectOutputStream outputStream = activeConnections.get(participant).getOutputStream();
-                                    outputStream.writeObject(clientMessage);
+                                    MessageResponse response = getMessageResponse(clientMessage, true, ErrorCode.NONE);
+                                    outputStream.writeObject(response);
+//                                    outputStream.writeObject(clientMessage);
                                     outputStream.flush();
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -132,14 +128,52 @@ public class ConnectionThread implements Runnable {
                         System.out.println("[" + authentication.getUsername() + " - " +
                                 clientAction.getAction().toString() + "]:");
 
-                        boolean done = this.applyAction(clientAction);
-                        if (done) System.out.println("Action was successfully processed");
+//                        boolean done = this.applyAction(clientAction);
+//                        if (done) System.out.println("Action was successfully processed");
+                        Response response = this.applyAction(clientAction);
+                        //TODO only print success or fail once (not in applyAction too !
+                        if (response.isSuccess()) System.out.println("Action was successfully processed");
                         else System.out.println("Action wasn't completed");
 
                         if (clientAction.getAction() == Action.ActionType.EXIT) {
                             activeConnections.remove(clientAction.getPayload());
                             connection.close();
                             break;
+                        }
+
+                        if (clientAction.getAction() == Action.ActionType.GET_ALL_MESSAGES_BY_CHAT_ID ||
+                            clientAction.getAction() == Action.ActionType.GET_ALL_USERS ||
+                            clientAction.getAction() == Action.ActionType.GET_ONLINE_USERS ||
+                            clientAction.getAction() == Action.ActionType.GET_ALL_USER_CHATS) {
+
+                            try {
+                                ObjectOutputStream outputStream = activeConnections.get(clientAction.getSender().getUsername()).getOutputStream();
+                                outputStream.writeObject(response);
+                                outputStream.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            continue;
+                        }
+
+
+                        if (activeChats.size() > 0) {
+                            List<String> participants = activeChats.get(clientAction.getSender().getCurrentChatId()).getParticipantsUsernames();
+
+                            // check if the sender is in the chat
+                            if (!participants.contains(clientAction.getSender().getUsername()))
+                                continue;
+
+                            // send the message to each participant
+                            participants.forEach(participant -> {
+                                try {
+                                    ObjectOutputStream outputStream = activeConnections.get(participant).getOutputStream();
+                                    outputStream.writeObject(response);
+                                    outputStream.flush();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            });
                         }
                     }
                 }
@@ -149,21 +183,30 @@ public class ConnectionThread implements Runnable {
         }
     }
 
-    private boolean applyAction(Action action) {
+    private Response getResponse(Action clientAction, boolean success, ErrorCode errorCode) {
+        return new Response(clientAction.getSender(), success, errorCode);
+    }
+
+    private MessageResponse getMessageResponse(Message message, boolean success, ErrorCode errorCode) {
+        return new MessageResponse(message.getSender(), success, errorCode, message);
+    }
+
+    private Response applyAction(Action action) {
          return switch (action.getAction()) {
             case GET_ALL_MESSAGES_BY_CHAT_ID -> this.getAllMessagesByChatId(action);
-            case GET_ALL_USERS -> this.getAllUsers(action);
-            case GET_ALL_USER_CHATS -> this.getAllUserChats(action);
+            case GET_ONLINE_USERS -> this.getConnectedUsersResponse(action);
+            case GET_ALL_USERS -> this.getAllUsersResponse(action);
+            case GET_ALL_USER_CHATS -> this.getAllUserChatsResponse(action);
             case CREATE_GROUP -> this.createGroup(action);
             case DELETE_GROUP -> this.deleteGroup(action);
             case ADD_PARTICIPANT_TO_GROUP -> this.addParticipantToGroup(action);
             case REMOVE_PARTICIPANT_FROM_GROUP -> this.removeParticipantFromGroup(action);
             case CREATE_O2O -> this.createO2o(action);
-            default -> true;
+            default -> getResponse(action, false, ErrorCode.INTERNAL_ERROR);
         };
     }
 
-    private boolean createGroup(Action clientAction) {
+    private Response createGroup(Action clientAction) {
         Integer newChatId = activeChats.size();
 
         ArrayList<String> participants = new ArrayList<>();
@@ -178,39 +221,44 @@ public class ConnectionThread implements Runnable {
         activeChats.put(newChatId, group);
         groupService.saveGroup(group);
         System.out.println("[Action completed] Group " + clientAction.getPayload());
-        return true;
+        return getResponse(clientAction, true, ErrorCode.NONE);
     }
 
-    private boolean deleteGroup(Action clientAction) {
+    private Response deleteGroup(Action clientAction) {
+        Response response;
         Chat removed = activeChats.remove(clientAction.getSender().getCurrentChatId());
-        boolean result = removed != null;
+
+        if (removed != null) {
+            groupService.deleteGroup(removed.getId());
+            response = getResponse(clientAction, true, ErrorCode.NONE);
+        } else
+            response = getResponse(clientAction, false, ErrorCode.NO_MATCHING_CHAT);
 
         // TODO check if participant (its username) exists
 
-        if (result) {
-            groupService.deleteGroup(removed.getId());
+        if (response.isSuccess())
             System.out.println("[Action completed] Group " + clientAction.getPayload());
-        } else
+        else
             System.out.println("[Action aborted] Group " + clientAction.getPayload() + " wasn't created ");
 
-        return result;
+        return response;
     }
 
-    private boolean addParticipantToGroup(Action clientAction) {
+    private Response addParticipantToGroup(Action clientAction) {
         Chat chat = activeChats.get(clientAction.getSender().getCurrentChatId());
 
         if (chat == null) {
             System.out.println("[Action completed] Participant "
                     + clientAction.getPayload() + " wasn't added to the chat because the chat "
                     + clientAction.getSender().getCurrentChatId() + " doesn't exist");
-            return false;
+            return getResponse(clientAction, false, ErrorCode.NO_CHAT_CREATED);
         }
 
         if (chat.getParticipantsUsernames().contains(clientAction.getPayload())) {
             System.out.println("[Action completed] Participant "
                     + clientAction.getPayload() + " wasn't added to the chat "
                     + clientAction.getSender().getCurrentChatId() + " because participant has been already added to this chat");
-            return false;
+            return getResponse(clientAction, false, ErrorCode.PARTICIPANT_ALREADY_ADDED);
         }
         else {
             chat.getParticipantsUsernames().add(clientAction.getPayload());
@@ -218,11 +266,11 @@ public class ConnectionThread implements Runnable {
             System.out.println("[Action completed] Participant "
                     + clientAction.getPayload() + " was added to the chat "
                     + clientAction.getSender().getCurrentChatId());
-            return true;
+            return getResponse(clientAction, true, ErrorCode.NONE);
         }
     }
 
-    private boolean removeParticipantFromGroup(Action clientAction) {
+    private Response removeParticipantFromGroup(Action clientAction) {
         Chat chat = activeChats.get(clientAction.getSender().getCurrentChatId());
         GroupChat groupChat = null;
 
@@ -230,36 +278,41 @@ public class ConnectionThread implements Runnable {
             System.out.println("[Action completed] Participant "
                     + clientAction.getPayload() + " wasn't removed from the chat because the chat "
                     + clientAction.getSender().getCurrentChatId() + " doesn't exist");
-            return false;
+            return getResponse(clientAction, false, ErrorCode.NO_MATCHING_CHAT);
         }
 
         if (!(chat instanceof GroupChat)) {
             System.out.println("[Action aborted] Chat is not a group");
-            return false;
+            return getResponse(clientAction, false, ErrorCode.INTERNAL_ERROR);
         }
         else
             groupChat = (GroupChat) chat;
 
 
         if (Objects.equals(groupChat.getAdminSessionsKey(), clientAction.getSender().getSecureSessionKey())) {
-            System.out.println("[Action aborted] Admin can not quit the group");
-            return false;
+            System.out.println("[Action aborted] Only admin can do this action");
+            return getResponse(clientAction, false, ErrorCode.ONLY_ADMIN_CAN_REMOVE_PARTICIPANT);
+        }
+
+        //payload session
+        if (Objects.equals(clientAction.getPayload(), clientAction.getSender().getUsername())) {
+            System.out.println("[Action aborted] User can not remove itself.");
+            return getResponse(clientAction, false, ErrorCode.CAN_NOT_REMOVE_ITSELF);
         }
 
         if (chat.getParticipantsUsernames().contains(clientAction.getPayload())) {
             chat.getParticipantsUsernames().remove(clientAction.getPayload());
             groupService.removeParticipantFromGroup(clientAction.getPayload(), chat.getId());
-            return true;
-        }
-        else {
+            return getResponse(clientAction, true, ErrorCode.NONE);
+        } else {
             System.out.println("[Action completed] Participant "
                     + clientAction.getPayload() + " wasn't removed from the chat "
                     + clientAction.getSender().getCurrentChatId() + " because the participant doesn't exist in this chat");
-            return false;
+            return getResponse(clientAction, false, ErrorCode.PARTICIPANT_NOT_EXIST_IN_CHAT);
         }
     }
 
-    private boolean createO2o(Action clientAction) {
+    private Response createO2o(Action clientAction) {
         Integer newChatId = activeChats.size();
         ArrayList<String> participants = new ArrayList<>();
         participants.add(clientAction.getSender().getUsername());
@@ -272,35 +325,50 @@ public class ConnectionThread implements Runnable {
         // check if one2one is already present
         if (activeChats.containsValue(one2one)) {
             System.out.println("[Action aborted] O2o " + clientAction.getPayload() + " already exists");
-            return false;
+            return getResponse(clientAction, false, ErrorCode.O2O_ALREADY_EXISTS);
         }
 
         activeChats.put(newChatId, one2one);
         o2oService.saveO2o(one2one);
         System.out.println("[Action completed] O2o " + clientAction.getPayload() + " has been created");
-        return true;
+        return getResponse(clientAction, true, ErrorCode.NONE);
     }
 
-    public boolean getAllMessagesByChatId(Action action) {
+    public Response getAllMessagesByChatId(Action clientAction) {
         // TODO add pages to list of messages
-        List<Message> messages = messageService.getAllMessagesByChatId(action.getSender().getCurrentChatId());
-        return true;
+        List<Message> messages = messageService.getAllMessagesByChatId(clientAction.getSender().getCurrentChatId());
+        return new AllMessagesByChatIdResponse(clientAction.getSender(), true, ErrorCode.NONE, messages);
     }
 
-    public boolean getAllUsers(Action action) {
-        return true;
+    public Response getAllUsersResponse(Action clientAction) {
+        return new AllUsersResponse(clientAction.getSender(), true, ErrorCode.NONE, getAllUsers());
     }
 
-    public boolean getConnectedUsers(Action action) {
-        return true;
+    public Response getConnectedUsersResponse(Action clientAction) {
+        return new OnlineConnectionsResponse(clientAction.getSender(), true, ErrorCode.NONE, getOnlineConnections());
     }
 
-    public boolean getAllUserChats(Action action) {
+    public Response getAllUserChatsResponse(Action clientAction) {
 
-        return true;
+        Map<Integer, Chat> userChats = new HashMap<>();
+
+        for (var entry : activeChats.entrySet()) {
+            Integer chatId = entry.getKey();
+            Chat chat = entry.getValue();
+
+            if (chat.getParticipantsUsernames().contains(clientAction.getSender().getUsername())) {
+                userChats.put(chatId, chat);
+            }
+        }
+
+        return new AllUserChatsResponse(clientAction.getSender(), true, ErrorCode.NONE, userChats);
     }
 
-    public Map<String, Connection> getActiveConnections() {
+    public Map<String, Connection> getOnlineConnections() {
         return activeConnections;
+    }
+
+    public ArrayList<String> getAllUsers() {
+        return new ArrayList<>(activeConnections.keySet());
     }
 }

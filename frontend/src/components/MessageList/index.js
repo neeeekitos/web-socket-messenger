@@ -6,15 +6,32 @@ import Message from '../Message';
 import moment from 'moment';
 
 import './MessageList.css';
+import axios from "axios";
 
 const MY_USER_ID = 'apple';
 
 export default function MessageList(props) {
-  const [messages, setMessages] = useState([])
+  const [messages, setMessages] = useState([]);
+  const [chatId, setChatId] = useState(0);
 
-  useEffect(() => {
-    getMessages();
-  },[])
+  useEffect(async () => {
+      await fetchMessages();
+  },[]);
+
+    const fetchMessages = async () => {
+        console.log('fetching messages...')
+        const response = await axios.get(`http://localhost:8081/messages/getMessagesByChatId?chatId=${chatId}`);
+        const messages = Object.values(response.data).reverse().map((message) => {
+            return {
+                id: message.id,
+                author: message.sender.username,
+                message: message.text,
+                timestamp: new Date(message.time)
+            }
+        })
+        setMessages(messages);
+        console.log(messages);
+  }
 
   
   const getMessages = () => {
@@ -92,7 +109,8 @@ export default function MessageList(props) {
       let previous = messages[i - 1];
       let current = messages[i];
       let next = messages[i + 1];
-      let isMine = current.author === MY_USER_ID;
+      // let isMine = current.author === MY_USER_ID;
+      let isMine = true;
       let currentMoment = moment(current.timestamp);
       let prevBySameAuthor = false;
       let nextBySameAuthor = false;
@@ -147,21 +165,21 @@ export default function MessageList(props) {
         <Toolbar
           title="Conversation Title"
           rightItems={[
-            <ToolbarButton key="info" icon="ion-ios-information-circle-outline" />,
-            <ToolbarButton key="video" icon="ion-ios-videocam" />,
-            <ToolbarButton key="phone" icon="ion-ios-call" />
+            <ToolbarButton key="info" onClick={() => console.log("checkInfo")} icon="ion-ios-information-circle-outline" />,
+            <ToolbarButton key="video" onClick={() => console.log("checkInfo")} icon="ion-ios-videocam" />,
+            <ToolbarButton key="phone" onClick={() => console.log("checkInfo")} icon="ion-ios-call" />
           ]}
         />
 
         <div className="message-list-container">{renderMessages()}</div>
 
         <Compose rightItems={[
-          <ToolbarButton key="photo" icon="ion-ios-camera" />,
-          <ToolbarButton key="image" icon="ion-ios-image" />,
-          <ToolbarButton key="audio" icon="ion-ios-mic" />,
-          <ToolbarButton key="money" icon="ion-ios-card" />,
-          <ToolbarButton key="games" icon="ion-logo-game-client.controller-b" />,
-          <ToolbarButton key="emoji" icon="ion-ios-happy" />
+          <ToolbarButton key="photo" onClick={() => console.log("checkInfo")} icon="ion-ios-camera" />,
+          <ToolbarButton key="image" onClick={() => console.log("checkInfo")} icon="ion-ios-image" />,
+          <ToolbarButton key="audio" onClick={() => console.log("checkInfo")} icon="ion-ios-mic" />,
+          <ToolbarButton key="money" onClick={() => console.log("checkInfo")} icon="ion-ios-card" />,
+          <ToolbarButton key="games" onClick={() => console.log("checkInfo")} icon="ion-logo-game-client.controller-b" />,
+          <ToolbarButton key="emoji" onClick={() => console.log("checkInfo")} icon="ion-ios-happy" />
         ]}/>
       </div>
     );

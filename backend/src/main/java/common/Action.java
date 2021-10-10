@@ -15,6 +15,7 @@ public class Action extends BatchEntity {
         CREATE_O2O("\\create_o2o"),
         GET_ALL_MESSAGES_BY_CHAT_ID("\\get_all_messages"),
         GET_ALL_USERS("\\get_all_users"),
+        GET_ONLINE_USERS("\\get_online_users"),
         GET_ALL_USER_CHATS("\\get_all_user_chats"),
         EXIT("\\exit"),
         NONE("");

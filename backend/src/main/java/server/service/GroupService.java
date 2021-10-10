@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.swing.*;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Data
@@ -33,7 +34,7 @@ public class GroupService {
         return savedGroupChat;
     }
 
-    public GroupChat addParticipantToGroup(final String username, final Long id) {
+    public GroupChat addParticipantToGroup(final String username, final Long id) throws NoSuchElementException {
         Optional<GroupChat> groupOptionnal = groupRepository.findById(id);
         // TODO check if original group is not found, manage exception
         GroupChat group = groupOptionnal.get();

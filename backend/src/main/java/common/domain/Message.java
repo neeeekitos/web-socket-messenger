@@ -19,11 +19,13 @@ public class Message extends BatchEntity {
 
     private String text;
     private Timestamp time;
+    private Integer chatId;
 
-    public Message(Session sender, String text, Timestamp time) {
+    public Message(Session sender, String text, Timestamp time, Integer chatId) {
         super(sender, EntityType.MESSAGE);
         this.text = text;
         this.time = time;
+        this.chatId = chatId;
     }
 
     @Override
