@@ -8,14 +8,20 @@ export default function ConversationListItem(props) {
     shave('.conversation-snippet', 20);
   })
 
-    const { photo, name, text } = props.data;
+    const { photo, name, text, chatId } = props.data;
+
+    const loadMessagesByChatId = () => {
+        console.log(`fetching messages for a chat id = ${chatId}`)
+        props.getMessagesByChatId(chatId);
+    }
 
     return (
-      <div className="conversation-list-item">
+      <div className="conversation-list-item" onClick={loadMessagesByChatId}>
         <img className="conversation-photo" src={photo} alt="conversation" />
         <div className="conversation-info">
           <h1 className="conversation-title">{ name }</h1>
           <p className="conversation-snippet">{ text }</p>
+          <p className="conversation-snippet">{ chatId }</p>
         </div>
       </div>
     );

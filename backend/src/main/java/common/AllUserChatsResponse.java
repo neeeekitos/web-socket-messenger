@@ -13,7 +13,7 @@ public class AllUserChatsResponse extends Response {
     Map<Integer, Chat> activeChats;
 
     public AllUserChatsResponse(Session sender, boolean actionSucceed, ErrorCode errorCode, Map<Integer, Chat> activeChats) {
-        super(sender, actionSucceed, errorCode);
+        super(EntityType.ALL_USER_CHATS_RESPONSE, sender, actionSucceed, errorCode);
         this.activeChats = activeChats;
     }
 }

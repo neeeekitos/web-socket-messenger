@@ -39,6 +39,11 @@ public abstract class BatchEntity implements Serializable {
     public enum EntityType {
         ACTION,
         MESSAGE,
-        RESPONSE
+        MESSAGE_RESPONSE,
+        ACTION_RESPONSE,
+        ALL_USERS_RESPONSE,
+        ALL_USER_CHATS_RESPONSE,
+        ALL_MESSAGES_BY_USER_RESPONSE,
+        ONLINE_CONNECTIONS_RESPONSE
     }
 }

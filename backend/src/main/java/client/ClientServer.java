@@ -34,6 +34,9 @@ public class ClientServer {
     private Connection connection;
 
     @Autowired
+    private SocketListener socketListener;
+
+    @Autowired
     private ClientAuthenticationService clientAuthenticationService;
 
     @Autowired
@@ -108,9 +111,8 @@ public class ClientServer {
         }
 
         // stage 2 : Message handling
-        SocketListener listener = new SocketListener();
-        listener.setConnection(connection);
-        listener.start();
+        socketListener.setConnection(connection);
+        socketListener.start();
 
         String line;
         while (true) {
@@ -138,8 +140,6 @@ public class ClientServer {
 
                 System.out.println("[Action] : Command:  " + command + ", Payload : " + payload);
 
-                // pause listener to prevent double reading of an object
-                listener.setPaused(true);
                 switch (Action.ActionType.getActionTypeByIdentifier(command)) {
                     case GET_ALL_MESSAGES_BY_CHAT_ID -> this.clientActionService.getAllMessagesByChatId();
                     case GET_ALL_USERS -> this.clientActionService.getAllUsers();
@@ -150,34 +150,19 @@ public class ClientServer {
                     case ADD_PARTICIPANT_TO_GROUP -> this.clientActionService.addParticipantToGroup(payload);
                     case REMOVE_PARTICIPANT_FROM_GROUP -> this.clientActionService.removeParticipantFromGroup(payload);
                 }
-                listener.setPaused(false);
 
             } else if (line.charAt(0) == '-') {
                 // set current chat id
                 connection.getSession().setCurrentChatId(Integer.parseInt(line.substring(1)));
                 System.out.println("[Chat changed] : new chat id is " +
                         connection.getSession().getCurrentChatId());
-            } else {
+            } else if (connection.isAuthenticated()){
                 //send user message to server
                 // TODO change chatId
                 Message clientMessage = new Message(connection.getSession(), line, new Timestamp(System.currentTimeMillis()), connection.getSession().getCurrentChatId());
                 connection.getOutputStream().writeObject(clientMessage);
                 connection.getOutputStream().flush();
 
-//                // wait for server response
-//                // pause listener to prevent double reading of a object
-//                listener.setPaused(true);
-//                Object objectMessage = connection.getInputStream().readObject();
-//                // TODO Change to Message type
-//                if (((BatchEntity) objectMessage).getType() == BatchEntity.EntityType.RESPONSE) {
-//                    Message clientMsg = ((MessageResponse) objectMessage).getClientMessage();
-//                    System.out.println("New message from chat : "
-//                            + clientMsg.getSender().getCurrentChatId()
-//                            + "\r\nText: "
-//                            + clientMsg.getText());
-//
-//                }
-//                listener.setPaused(false);
             }
         }
         stdIn.close();

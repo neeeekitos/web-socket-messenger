@@ -10,7 +10,7 @@ public class MessageResponse extends Response {
     Message clientMessage;
 
     public MessageResponse(Session sender, boolean success, ErrorCode errorCode, Message message) {
-        super(sender, success, errorCode);
+        super(EntityType.MESSAGE_RESPONSE, sender, success, errorCode);
         this.clientMessage = message;
     }
 }

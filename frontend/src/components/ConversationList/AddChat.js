@@ -31,12 +31,18 @@ export default function AddChat(props) {
                     </Dropdown.Menu>
                 </Dropdown>
                 <input
-                    type="search"
+                    type="text"
+                    list="data" // link to datalist below
                     className="conversation-search-input"
                     placeholder={isGroup ? "Your group name" : "Username"}
                     value={name}
                     onChange={e => setName(e.target.value)}
                 />
+                <datalist id="data">
+                    {props.allUsers.map((item, key) =>
+                        <option key={key} value={item} />
+                    )}
+                </datalist>
                 <Button className={styles.btn} onClick={() => props.createChat(isGroup, name)}>Create</Button>
             </Form>
         </div>

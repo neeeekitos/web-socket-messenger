@@ -184,7 +184,7 @@ public class ConnectionThread implements Runnable {
     }
 
     private Response getResponse(Action clientAction, boolean success, ErrorCode errorCode) {
-        return new Response(clientAction.getSender(), success, errorCode);
+        return new Response(BatchEntity.EntityType.ACTION_RESPONSE, clientAction.getSender(), success, errorCode);
     }
 
     private MessageResponse getMessageResponse(Message message, boolean success, ErrorCode errorCode) {
@@ -336,7 +336,7 @@ public class ConnectionThread implements Runnable {
 
     public Response getAllMessagesByChatId(Action clientAction) {
         // TODO add pages to list of messages
-        List<Message> messages = messageService.getAllMessagesByChatId(clientAction.getSender().getCurrentChatId());
+        List<Message> messages = messageService.getAllMessagesByChatId(Integer.parseInt(clientAction.getPayload()));
         return new AllMessagesByChatIdResponse(clientAction.getSender(), true, ErrorCode.NONE, messages);
     }
 

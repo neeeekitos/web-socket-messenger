@@ -12,7 +12,7 @@ public class AllMessagesByChatIdResponse extends Response {
     List<Message> messages;
 
     public AllMessagesByChatIdResponse(Session sender, boolean actionSucceed, ErrorCode errorCode, List<Message> messages) {
-        super(sender, actionSucceed, errorCode);
+        super(EntityType.ALL_MESSAGES_BY_USER_RESPONSE, sender, actionSucceed, errorCode);
         this.messages = messages;
     }
 }

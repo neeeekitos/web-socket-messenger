@@ -26,34 +26,25 @@ public class ClientMessageService {
     @Autowired
     private Connection connection;
 
-    public List<Message> getAllMessagesByChatId() throws IOException, ClassNotFoundException {
-        Action clientAction = new Action(connection.getSession(), Action.ActionType.GET_ALL_MESSAGES_BY_CHAT_ID, "");
+    public void sendObject(Object object) throws IOException, ClassNotFoundException {
+        if (connection.isAuthenticated()) {
+            connection.getOutputStream().writeObject(object);
+            connection.getOutputStream().flush();
+        }
+    }
+
+    public void getAllMessagesByChatId(Integer chatId) throws IOException, ClassNotFoundException {
+        Action clientAction = new Action(connection.getSession(), Action.ActionType.GET_ALL_MESSAGES_BY_CHAT_ID, chatId.toString());
 
         //send user action to server
-        connection.getOutputStream().writeObject(clientAction);
-        connection.getOutputStream().flush();
-
-        AllMessagesByChatIdResponse response = (AllMessagesByChatIdResponse) readServerResponse();
-
-        return response.getMessages();
+        sendObject(clientAction);
     }
 
     public Message sendMessage(String text) throws IOException, ClassNotFoundException {
         Message clientMessage = new Message(connection.getSession(), text, new Timestamp(System.currentTimeMillis()), connection.getSession().getCurrentChatId());
-        connection.getOutputStream().writeObject(clientMessage);
-        connection.getOutputStream().flush();
 
-        // wait for server response
-        MessageResponse response = (MessageResponse) readServerResponse();
-        return response.getClientMessage();
-    }
-
-    public Response readServerResponse() throws IOException, ClassNotFoundException {
-        // wait for server response
-        Response response = (Response) connection.getInputStream().readObject();
-        if (!response.isSuccess()) {
-            System.out.println(response.getErrorCode().toString());
-        }
-        return response;
+        //send user message to server
+        sendObject(clientMessage);
+        return clientMessage;
     }
 }

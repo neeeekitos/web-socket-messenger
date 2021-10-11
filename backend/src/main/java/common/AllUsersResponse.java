@@ -13,7 +13,7 @@ public class AllUsersResponse extends Response {
     ArrayList<String> users;
 
     public AllUsersResponse(Session sender, boolean actionSucceed, ErrorCode errorCode, ArrayList<String> users) {
-        super(sender, actionSucceed, errorCode);
+        super(EntityType.ALL_USERS_RESPONSE, sender, actionSucceed, errorCode);
         this.users = users;
     }
 }

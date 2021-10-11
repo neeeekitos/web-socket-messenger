@@ -9,33 +9,35 @@ import './ConversationList.css';
 import AddChat from "./AddChat";
 
 export default function ConversationList(props) {
-  const [conversations, setConversations] = useState([]);
-  const [addChatOpened, setNewChatOpen] = useState(false);
+    const [conversations, setConversations] = useState([]);
+    const [addChatOpened, setNewChatOpen] = useState(false);
 
-  useEffect(async () => {
-    //await getChats()
-  },[])
+    useEffect(() => {
+        (async () => {
+            await setChats();
+        })();
+    },[props.chats]);
 
-  const getChats = async () => {
-      const response = await axios.get('http://localhost:8081/actions/allUserChats');
-      const responseArray = Object.values(response.data);
-        console.log(responseArray);
-      const conversationsNumber = responseArray.length;
-      console.log(`fetching images for ${conversationsNumber} conversations.`);
+    const setChats = async () => {
 
-      const responseImagers = await axios.get(`https://randomuser.me/api/?results=${conversationsNumber}`);
+        console.log(props.chats)
+        const responseArray = props.chats;
+        const conversationsNumber = responseArray.length;
+        console.log(`fetching images for ${conversationsNumber} conversations.`);
 
-      let newConversations = responseArray.map((result, index) => {
+        const responseImagers = await axios.get(`https://randomuser.me/api/?results=${conversationsNumber}`);
+
+        let newConversations = responseArray.map((result, index) => {
           return {
               photo: responseImagers.data.results[index].picture.large,
-              name: `${result.groupName}`,
-              text: 'Hello world! This is a long message that needs to be truncated.'
+              name:  (result.groupName) ? result.groupName : result.participantsUsernames,
+              text: 'Hello world! This is a long message that needs to be truncated.',
+              chatId: result.chatId
           };
-      });
-      // setConversations([...conversations, ...newConversations])
-      setConversations(newConversations);
-      console.log(response);
-  }
+        });
+        // setConversations([...conversations, ...newConversations])
+        setConversations(newConversations);
+    }
 
   const createChat = async (isGroup, name) => {
 
@@ -61,7 +63,7 @@ export default function ConversationList(props) {
       console.log(response.data, response.status);
       alert(`Server response : ${response.data}`);
       console.log(response);
-      await getChats();
+      await axios.get("http://localhost:8081/actions/allUserChats");
 
       // close add chat section
       setNewChatOpen(false);
@@ -78,13 +80,14 @@ export default function ConversationList(props) {
             <ToolbarButton key="add"  onClick={() => setNewChatOpen(true)} icon="ion-ios-add-circle-outline" />
           ]}
         />
-          <AddChat disabled={!addChatOpened}  createChat={createChat}/>
+          <AddChat allUsers={props.allUsers} disabled={!addChatOpened}  createChat={createChat}/>
         <ConversationSearch onclick={() => console.log("search")}  />
         {
           conversations.map(conversation =>
             <ConversationListItem
-              key={conversation.name}
-              data={conversation}
+                getMessagesByChatId={props.getMessagesByChatId}
+                key={conversation.name}
+                data={conversation}
             />
           )
         }

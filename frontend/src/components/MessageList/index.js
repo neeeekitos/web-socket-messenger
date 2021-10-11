@@ -11,104 +11,29 @@ import axios from "axios";
 const MY_USER_ID = 'apple';
 
 export default function MessageList(props) {
-  const [messages, setMessages] = useState([]);
-  const [chatId, setChatId] = useState(0);
+    const [chatId, setChatId] = useState(0);
 
-  useEffect(async () => {
-      await fetchMessages();
-  },[]);
+    let messagesEnd;
 
-    const fetchMessages = async () => {
-        console.log('fetching messages...')
-        const response = await axios.get(`http://localhost:8081/messages/getMessagesByChatId?chatId=${chatId}`);
-        const messages = Object.values(response.data).reverse().map((message) => {
-            return {
-                id: message.id,
-                author: message.sender.username,
-                message: message.text,
-                timestamp: new Date(message.time)
-            }
-        })
-        setMessages(messages);
-        console.log(messages);
-  }
+    useEffect(() => {
+        console.log("puzidex")
+        renderMessages();
+        scrollToBottom();
+    },[props.messagesProp]);
 
-  
-  const getMessages = () => {
-     var tempMessages = [
-        {
-          id: 1,
-          author: 'apple',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 2,
-          author: 'orange',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 3,
-          author: 'orange',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 4,
-          author: 'apple',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 5,
-          author: 'apple',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 6,
-          author: 'apple',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 7,
-          author: 'orange',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 8,
-          author: 'orange',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 9,
-          author: 'apple',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 10,
-          author: 'orange',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-      ]
-      setMessages([...messages, ...tempMessages])
-  }
+    const scrollToBottom = () => {
+        messagesEnd.scrollIntoView({ behavior: "smooth" });
+    }
 
   const renderMessages = () => {
     let i = 0;
-    let messageCount = messages.length;
+    let messageCount = props.messagesProp.length;
     let tempMessages = [];
 
     while (i < messageCount) {
-      let previous = messages[i - 1];
-      let current = messages[i];
-      let next = messages[i + 1];
+      let previous = props.messagesProp[i - 1];
+      let current = props.messagesProp[i];
+      let next = props.messagesProp[i + 1];
       // let isMine = current.author === MY_USER_ID;
       let isMine = true;
       let currentMoment = moment(current.timestamp);
@@ -171,9 +96,15 @@ export default function MessageList(props) {
           ]}
         />
 
-        <div className="message-list-container">{renderMessages()}</div>
+        <div className="message-list-container">
+            {renderMessages()}
+            <div style={{ float:"left", clear: "both" }}
+                 ref={(el) => { messagesEnd = el; }}>
+            </div>
+        </div>
 
-        <Compose rightItems={[
+
+        <Compose sendMessage={props.sendMessage} rightItems={[
           <ToolbarButton key="photo" onClick={() => console.log("checkInfo")} icon="ion-ios-camera" />,
           <ToolbarButton key="image" onClick={() => console.log("checkInfo")} icon="ion-ios-image" />,
           <ToolbarButton key="audio" onClick={() => console.log("checkInfo")} icon="ion-ios-mic" />,

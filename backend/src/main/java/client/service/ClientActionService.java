@@ -2,10 +2,14 @@ package client.service;
 
 import common.*;
 import common.domain.*;
+import org.apache.coyote.Request;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,40 +21,27 @@ public class ClientActionService {
     private Connection connection;
 
 //    public List<Message> getAllMessagesByChatId() throws IOException {
-    public List<Message> getAllMessagesByChatId() throws IOException, ClassNotFoundException {
+
+    public void sendAction(Action clientAction) throws IOException, ClassNotFoundException {
+        if (connection.isAuthenticated()) {
+            connection.getOutputStream().writeObject(clientAction);
+            connection.getOutputStream().flush();
+        }
+    }
+
+    public void getAllMessagesByChatId() throws IOException, ClassNotFoundException {
         Action clientAction = new Action(connection.getSession(), Action.ActionType.GET_ALL_MESSAGES_BY_CHAT_ID, "");
-
-        //send user action to server
-        connection.getOutputStream().writeObject(clientAction);
-        connection.getOutputStream().flush();
-
-        AllMessagesByChatIdResponse response = (AllMessagesByChatIdResponse) readServerResponse();
-
-        return response.getMessages();
+        this.sendAction(clientAction);
     }
 
-    public Map<Integer, Chat> getAllUserChats() throws IOException, ClassNotFoundException {
+    public void getAllUserChats() throws IOException, ClassNotFoundException {
         Action clientAction = new Action(connection.getSession(), Action.ActionType.GET_ALL_USER_CHATS, "");
-
-        //send user action to server
-        connection.getOutputStream().writeObject(clientAction);
-        connection.getOutputStream().flush();
-
-        AllUserChatsResponse response = (AllUserChatsResponse) readServerResponse();
-
-        return response.getActiveChats();
+        this.sendAction(clientAction);
     }
 
-    public ArrayList<String> getAllUsers() throws IOException, ClassNotFoundException {
+    public void getAllUsers() throws IOException, ClassNotFoundException {
         Action clientAction = new Action(connection.getSession(), Action.ActionType.GET_ALL_USERS, "");
-
-        //send user action to server
-        connection.getOutputStream().writeObject(clientAction);
-        connection.getOutputStream().flush();
-
-        AllUsersResponse response = (AllUsersResponse) readServerResponse();
-
-        return response.getUsers();
+        this.sendAction(clientAction);
     }
 
     public boolean changeChatId(final Integer newChatId) throws IOException {
@@ -59,82 +50,48 @@ public class ClientActionService {
         return true;
     }
 
-    public Response createGroup(final String groupName) throws IOException, ClassNotFoundException {
+    public void createGroup(final String groupName) throws IOException, ClassNotFoundException {
         Action clientAction = new Action(
                 connection.getSession(),
                 Action.ActionType.CREATE_GROUP,
                 groupName);
 
-        //send user action to server
-        connection.getOutputStream().writeObject(clientAction);
-        connection.getOutputStream().flush();
-
-        Response response = readServerResponse();
-        return response;
+        this.sendAction(clientAction);
     }
 
-    public Response deleteGroup(final String groupName) throws IOException, ClassNotFoundException {
+    public void deleteGroup(final String groupName) throws IOException, ClassNotFoundException {
         Action clientAction = new Action(
                 connection.getSession(),
                 Action.ActionType.DELETE_GROUP,
                 groupName);
 
-        //send user action to server
-        connection.getOutputStream().writeObject(clientAction);
-        connection.getOutputStream().flush();
-
-        Response response = readServerResponse();
-        return response;
+        this.sendAction(clientAction);
     }
 
-    public Response createO2o(final String username) throws IOException, ClassNotFoundException {
+    public void createO2o(final String username) throws IOException, ClassNotFoundException {
         Action clientAction = new Action(
                 connection.getSession(),
                 Action.ActionType.CREATE_O2O,
                 username);
 
-        //send user action to server
-        connection.getOutputStream().writeObject(clientAction);
-        connection.getOutputStream().flush();
-
-        Response response = readServerResponse();
-        return response;
+        this.sendAction(clientAction);
     }
 
-    public Response addParticipantToGroup(final String username) throws IOException, ClassNotFoundException {
+    public void addParticipantToGroup(final String username) throws IOException, ClassNotFoundException {
         Action clientAction = new Action(
                 connection.getSession(),
                 Action.ActionType.ADD_PARTICIPANT_TO_GROUP,
                 username);
 
-        //send user action to server
-        connection.getOutputStream().writeObject(clientAction);
-        connection.getOutputStream().flush();
-
-        Response response = readServerResponse();
-        return response;
+        this.sendAction(clientAction);
     }
 
-    public Response removeParticipantFromGroup(final String username) throws IOException, ClassNotFoundException {
+    public void removeParticipantFromGroup(final String username) throws IOException, ClassNotFoundException {
         Action clientAction = new Action(
                 connection.getSession(),
                 Action.ActionType.REMOVE_PARTICIPANT_FROM_GROUP,
                 username);
 
-        //send user action to server
-        connection.getOutputStream().writeObject(clientAction);
-        connection.getOutputStream().flush();
-
-        Response response = readServerResponse();
-        return response;
-    }
-
-    public Response readServerResponse() throws IOException, ClassNotFoundException {
-        // wait for server response
-        Response response = (Response) connection.getInputStream().readObject();
-        if (!response.isSuccess()) {
-            System.out.println(response.getErrorCode().toString());
-        }
-        return response;
+        this.sendAction(clientAction);
     }
 }

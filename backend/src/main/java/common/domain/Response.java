@@ -13,8 +13,8 @@ public class Response extends BatchEntity {
     boolean success;
     ErrorCode errorCode;
 
-    public Response(Session sender, boolean success, ErrorCode errorCode) {
-        super(sender, EntityType.RESPONSE);
+    public Response(EntityType responseType, Session sender, boolean success, ErrorCode errorCode) {
+        super(sender, responseType);
         this.success = success;
         this.errorCode = errorCode;
     }
