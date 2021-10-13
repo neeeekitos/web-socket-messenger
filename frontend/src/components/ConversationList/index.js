@@ -28,15 +28,16 @@ export default function ConversationList(props) {
         const responseImagers = await axios.get(`https://randomuser.me/api/?results=${conversationsNumber}`);
 
         let newConversations = responseArray.map((result, index) => {
-          return {
+            return {
               photo: responseImagers.data.results[index].picture.large,
-              name:  (result.groupName) ? result.groupName : result.participantsUsernames,
+              name:  (result.groupName) ? result.groupName : result.participantsUsernames.toString().replace(props.username,'').replace(',',''),
               text: 'Hello world! This is a long message that needs to be truncated.',
               chatId: result.chatId
           };
         });
         // setConversations([...conversations, ...newConversations])
         setConversations(newConversations);
+
     }
 
   const createChat = async (isGroup, name) => {

@@ -34,8 +34,8 @@ export default function MessageList(props) {
       let previous = props.messagesProp[i - 1];
       let current = props.messagesProp[i];
       let next = props.messagesProp[i + 1];
-      // let isMine = current.author === MY_USER_ID;
-      let isMine = true;
+      // let isMine = current.author === MY_USER_ID
+        let isMine = props.messagesProp[i].author===props.username;
       let currentMoment = moment(current.timestamp);
       let prevBySameAuthor = false;
       let nextBySameAuthor = false;

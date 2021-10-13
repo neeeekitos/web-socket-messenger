@@ -18,25 +18,14 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
         registry.enableSimpleBroker("/topic");
 
         // Set prefix for endpoints the client will send messages to
-        registry.setApplicationDestinationPrefixes("/actions");
+        registry.setApplicationDestinationPrefixes("/actions2");
 
     }
-//
-//    @Override
-//    public void registerStompEndpoints(StompEndpointRegistry registry) {
-//
-//        // Registers the endpoint where the connection will take place
-//        registry.addEndpoint("/")
-//                // Allow the origin http://localhost:63343 to send messages to us. (Base URL of the client)
-//                .setAllowedOrigins("http://localhost:3001")
-//                // Enable SockJS fallback options
-//                .withSockJS();
-//
-//    }
 
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/stomp").setAllowedOrigins("http://localhost:3001");
+        //registry.addEndpoint("/stomp1").setAllowedOrigins("http://localhost:3001");
+        registry.addEndpoint("/stomp2").setAllowedOrigins("http://localhost:3002");
     }
 }

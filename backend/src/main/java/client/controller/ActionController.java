@@ -82,7 +82,7 @@ public class ActionController {
         }
     }
 
-    @PostMapping("/deleteGroup")
+    @DeleteMapping("/deleteGroup")
     public void deleteGroup(@RequestBody String groupName) {
         System.out.println(" [Controller] : Deleting group : " + groupName);
 
@@ -164,13 +164,6 @@ public class ActionController {
         AllMessagesByChatIdResponse response = (AllMessagesByChatIdResponse) object;
         this.simpMessagingTemplate.convertAndSend("/topic/messages", response.getMessages());
         return response.getMessages();
-    }
-
-    @MessageMapping("/allUsers")
-    @SendTo("/topic/users")
-    public String test() throws IOException, ClassNotFoundException {
-        System.out.println("received from test!");
-        return "hui";
     }
 
     @MessageMapping("/newMessage")

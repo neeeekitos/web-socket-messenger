@@ -111,9 +111,6 @@ public class ClientServer {
         }
 
         // stage 2 : Message handling
-        socketListener.setConnection(connection);
-        socketListener.start();
-
         String line;
         while (true) {
             //wait for user keyboard entries

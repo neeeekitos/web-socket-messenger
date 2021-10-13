@@ -118,9 +118,7 @@ public class ConnectionThread implements Runnable {
 
                             // persist message in the database
                             System.out.println(messageService.saveMessage(clientMessage).toString());
-                        } else {
                         }
-
                     }
                     else if (((BatchEntity) objectMsg).getType() == BatchEntity.EntityType.ACTION)
                     {

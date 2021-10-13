@@ -3,11 +3,9 @@ import ConversationList from '../ConversationList';
 import MessageList from '../MessageList';
 import './Messenger.css';
 import axios from "axios";
-import { w3cwebsocket as W3CWebSocket } from "websocket";
-import * as SockJS from 'sockjs-client';
-import webstomp from 'webstomp-client';
 import { Client } from '@stomp/stompjs';
-// const clientSocket = new W3CWebSocket('ws://localhost:8081');
+import {Button} from "react-bootstrap";
+import styles from "../ConversationList/addchat.module.css";
 
 export default function Messenger(props) {
 
@@ -16,6 +14,7 @@ export default function Messenger(props) {
     const [currentChatId, setCurrentChatId] = useState(-1);
     const [messages, setMessages] = useState([]);
     const [authenticated, setAuth] = useState(false);
+    const [username, setUsername] = useState("");
 
 
     useEffect(async () => {
@@ -27,7 +26,7 @@ export default function Messenger(props) {
         let client = new Client();
 
         client.configure({
-            brokerURL: 'ws://localhost:8081/stomp',
+            brokerURL: 'ws://localhost:8081/stomp1',
             onConnect: async () => {
                 console.log('onConnect');
 
@@ -36,7 +35,8 @@ export default function Messenger(props) {
                 client.subscribe('/topic/messages', message => onAllMessagesReceived(message));
                 client.subscribe('/topic/users', message => onAllUsersReceived(message));
                 client.subscribe('/topic/newMessage', message => onNewMessageReceived(message));
-                await afterAuth();
+                if (await isAuthenticated())
+                    await afterAuth(); // fetch users and chats
             },
             // Helps during debugging, remove in production
             debug: (str) => {
@@ -71,7 +71,32 @@ export default function Messenger(props) {
         }
     }
 
+    const isAuthenticated = async () => {
+        const response = await axios.get("http://localhost:8081/auth/isAuthenticated");
+        const isAuth = response.data;
+        console.log(isAuth ? "User is authenticated" : "User is not authenticated");
+        if (isAuth) {
+            setAuth(true);
+            const usernameResponse = await axios.get("http://localhost:8081/auth/getUsername");
+            setUsername(usernameResponse.data);
+        }
+        return isAuth;
+    }
+
+    const authenticate = async () => {
+        const response = await axios.post('http://localhost:8081/auth/authenticate', username,
+            {
+                headers: {
+                    'Content-Type': 'text/plain',
+                }
+            });
+        console.log(response.data, response.status);
+        setAuth(true);
+        await afterAuth();
+    }
+
     const afterAuth = async () => {
+        console.log("fetching user infos...")
         await axios.get("http://localhost:8081/actions/allUsers");
         await axios.get("http://localhost:8081/actions/allUserChats");
     }
@@ -136,7 +161,7 @@ export default function Messenger(props) {
     }
 
     const sendMessage = (message) => {
-        console.log("loooool : "+ message)
+        console.log("sending message : "+ message + " from : " + username)
         axios.post("http://localhost:8081/messages/sendMessage", message, {
             headers: {
                 'Content-Type': 'text/plain'
@@ -167,19 +192,31 @@ export default function Messenger(props) {
             <ToolbarButton key="phone" icon="ion-ios-call" />
           ]}
         /> */}
-
             <div className="scrollable sidebar">
                 {/*<button onClick={async () => {*/}
                 {/*    setAuth(true);*/}
                 {/*    await afterAuth();*/}
                 {/*}}>Authenticated?</button>*/}
 
-                <ConversationList getMessagesByChatId={getMessagesByChatId} allUsers={allUsers} chats={chats}/>
+                <ConversationList username={username} getMessagesByChatId={getMessagesByChatId} allUsers={allUsers} chats={chats}/>
+            </div>
+            <div hidden={authenticated} className="authenticationPopupBox">
+                <div className="authenticationBox">
+                    <h3>Authentication</h3>
+                    <input
+                        type="text"
+                        list="data" // link to datalist below
+                        className="conversation-search-input"
+                        placeholder="Your username"
+                        value={username}
+                        onChange={e => setUsername(e.target.value)}
+                    />
+                    <Button className="btn" onClick={() => authenticate()}>Login</Button>
+                </div>
             </div>
 
-
             <div className="scrollable content">
-              <MessageList sendMessage={sendMessage} messagesProp={messages}/>
+              <MessageList username={username} sendMessage={sendMessage} messagesProp={messages}/>
             </div>
         </div>
     );

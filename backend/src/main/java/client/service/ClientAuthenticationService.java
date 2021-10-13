@@ -1,5 +1,6 @@
 package client.service;
 
+import client.SocketListener;
 import common.*;
 import common.Connection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,9 @@ public class ClientAuthenticationService {
 
     @Autowired
     private Connection connection;
+
+    @Autowired
+    private SocketListener socketListener;
 
     public void authenticate(String username) throws IOException, ClassNotFoundException {
 
@@ -41,6 +45,8 @@ public class ClientAuthenticationService {
                 connection.setAuthenticated(true);
                 System.out.println("[Client]: " + connection.getSession().getUsername()
                         + " : you're successfully authenticated");
+                socketListener.setConnection(connection);
+                socketListener.start();
             }
             authAttempts++;
         }
