@@ -21,3 +21,5 @@ yarn start // start the app on port 3001
 ```
 ### Here's a little example of a workflow that roughly illustrates how the application works, using a messages request as an example:
 ![get_messages_workflow](https://drive.google.com/uc?export=view&id=1b8ANs5V_UsWakUQOYJAe90tjShYahksM)
+
+SocketListener is a thread that listens for all incoming BatchEntity responses from Server and dispatch it to the right controller, while the controller retrieves the information from the object Response (extending BatchEntity) and sends to the React App.
