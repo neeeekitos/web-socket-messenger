@@ -19,5 +19,5 @@ cd web-socket-messenger/frontend/src
 yarn // install dependencies
 yarn start // start the app on port 3001
 ```
-Here's a little example of a workflow that roughly illustrates how the application works, using a messages request as an example:
+### Here's a little example of a workflow that roughly illustrates how the application works, using a messages request as an example:
 ![get_messages_workflow](https://drive.google.com/uc?export=view&id=1b8ANs5V_UsWakUQOYJAe90tjShYahksM)
