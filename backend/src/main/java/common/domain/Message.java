@@ -3,7 +3,7 @@ package common.domain;
 import common.BatchEntity;
 import lombok.*;
 import org.hibernate.Hibernate;
-import server.Session;
+import common.Session;
 
 import javax.persistence.*;
 import java.sql.Timestamp;

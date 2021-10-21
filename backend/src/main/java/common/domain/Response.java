@@ -4,7 +4,7 @@ import common.BatchEntity;
 import common.ErrorCode;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import server.Session;
+import common.Session;
 
 @Data
 @NoArgsConstructor

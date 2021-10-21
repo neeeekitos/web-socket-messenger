@@ -1,7 +1,6 @@
 package common;
 
 import common.domain.Response;
-import server.Session;
 
 import java.util.Map;
 

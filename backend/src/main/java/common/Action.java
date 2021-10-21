@@ -1,8 +1,6 @@
 package common;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import server.Session;
 
 @Data
 public class Action extends BatchEntity {

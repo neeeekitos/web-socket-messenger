@@ -3,7 +3,6 @@ package common;
 import common.domain.Message;
 import common.domain.Response;
 import lombok.Data;
-import server.Session;
 
 @Data
 public class MessageResponse extends Response {

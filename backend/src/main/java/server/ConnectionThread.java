@@ -72,7 +72,11 @@ public class ConnectionThread implements Runnable {
                     String secureSessionKey = KeyGenerator.generateSecureSessionKey(authentication.getUsername(), "secret");
                     connection.getSession().setSecureSessionKey(secureSessionKey);
                     connection.setAuthenticated(true);
-                    activeConnections.put(authentication.getUsername(), connection);
+                    if (activeConnections.containsKey(authentication.getUsername())) {
+                        activeConnections.replace(authentication.getUsername(), connection);
+                    } else {
+                        activeConnections.put(authentication.getUsername(), connection);
+                    }
 
                     System.out.println("[ConnectionThread]: Successfully authenticated user with username : "
                             + authentication.getUsername()
@@ -154,6 +158,8 @@ public class ConnectionThread implements Runnable {
                             continue;
                         }
 
+                        if (clientAction.getAction() == Action.ActionType.DELETE_GROUP)
+                            continue;
 
                         if (activeChats.size() > 0) {
                             List<String> participants = activeChats.get(clientAction.getSender().getCurrentChatId()).getParticipantsUsernames();

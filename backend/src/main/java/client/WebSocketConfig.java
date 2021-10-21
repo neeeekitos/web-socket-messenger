@@ -25,7 +25,6 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        //registry.addEndpoint("/stomp1").setAllowedOrigins("http://localhost:3001");
-        registry.addEndpoint("/stomp2").setAllowedOrigins("http://localhost:3002");
+        registry.addEndpoint("/stomp1").setAllowedOrigins("http://localhost:3001");
     }
 }

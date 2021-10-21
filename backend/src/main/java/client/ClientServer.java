@@ -15,7 +15,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import server.Session;
+import common.Session;
 
 import java.io.*;
 import java.net.*;

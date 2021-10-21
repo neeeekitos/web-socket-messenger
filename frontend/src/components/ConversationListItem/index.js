@@ -21,7 +21,6 @@ export default function ConversationListItem(props) {
         <div className="conversation-info">
           <h1 className="conversation-title">{ name }</h1>
           <p className="conversation-snippet">{ text }</p>
-          <p className="conversation-snippet">{ chatId }</p>
         </div>
       </div>
     );

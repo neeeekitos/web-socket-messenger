@@ -16,7 +16,6 @@ export default function MessageList(props) {
     let messagesEnd;
 
     useEffect(() => {
-        console.log("puzidex")
         renderMessages();
         scrollToBottom();
     },[props.messagesProp]);

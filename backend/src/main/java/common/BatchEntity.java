@@ -3,7 +3,6 @@ package common;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import server.Session;
 
 import javax.persistence.*;
 import java.io.Serializable;

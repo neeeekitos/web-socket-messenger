@@ -2,10 +2,8 @@ package common;
 
 import common.domain.Response;
 import lombok.Data;
-import server.Session;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 @Data
 public class AllUsersResponse extends Response {
