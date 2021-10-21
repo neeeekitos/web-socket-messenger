@@ -20,4 +20,4 @@ yarn // install dependencies
 yarn start // start the app on port 3001
 ```
 
-![get_messages_workflow](https://drive.google.com/uc?export=view&id=1AOw6zJ5a2xqSFLwQcYn4ermFICIO6f6Y)
+![get_messages_workflow](https://drive.google.com/uc?export=view&id=1b8ANs5V_UsWakUQOYJAe90tjShYahksM)
