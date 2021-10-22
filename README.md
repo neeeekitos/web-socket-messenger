@@ -1,4 +1,5 @@
-# Web Socket Messenger : University project. The goal of this project is to discover Java Websokets usecases and implement it in the messenger application.
+# Web Socket Messenger
+## University project. The goal of this project is to discover Java Websokets usecases and implement it in the messenger application.
 
 There are 2 modules :
 * SpringBoot App : used to run client & server servers
